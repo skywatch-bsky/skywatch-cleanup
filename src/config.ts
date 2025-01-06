@@ -7,5 +7,5 @@ export const BSKY_PASSWORD = process.env.BSKY_PASSWORD ?? "";
 export const LABEL_LIMIT = process.env.LABEL_LIMIT;
 export const LABEL_LIMIT_WAIT = process.env.LABEL_LIMIT_WAIT;
 export const AUTOACK_PERIOD = process.env.AUTOACK_PERIOD
-  ? Number(process.env.AUTOACK_PERIOD)
+  ? parseInt(process.env.AUTOACK_PERIOD, 10)
   : 600000;

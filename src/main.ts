@@ -124,8 +124,7 @@ async function main() {
     logger.info("Finished run at:", new Date().toISOString());
 
     if (isRunning) {
-      let readableTime = AUTOACK_PERIOD / 1000 / 60;
-      logger.info(`Sleeping for ${readableTime} minutes.`);
+      logger.info(`Sleeping for ${AUTOACK_PERIOD}`);
       await sleep(AUTOACK_PERIOD);
     }
   }
