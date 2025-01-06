@@ -13,8 +13,5 @@ RUN bun i
 # Bundle app source
 COPY . .
 
-# Expose the port the app runs
-EXPOSE 4101
-
 # Serve the app
 CMD ["bun", "run", "start"]
