@@ -26,3 +26,15 @@ interface Report {
     status: string;
   };
 }
+
+export interface Checks {
+  label: string;
+  comment: string;
+  description?: boolean;
+  displayName?: boolean;
+  reportOnly: boolean;
+  commentOnly: boolean;
+  check: RegExp;
+  whitelist?: RegExp;
+  ignoredDIDs?: string[];
+}
