@@ -38,3 +38,13 @@ export interface Checks {
   whitelist?: RegExp;
   ignoredDIDs?: string[];
 }
+
+export interface List {
+  label: string;
+  rkey: string;
+}
+
+export interface CheckList {
+  did: string;
+  rkey: string;
+}
