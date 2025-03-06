@@ -9,3 +9,4 @@ export const LABEL_LIMIT_WAIT = process.env.LABEL_LIMIT_WAIT;
 export const AUTOACK_PERIOD = process.env.AUTOACK_PERIOD
   ? parseInt(process.env.AUTOACK_PERIOD, 10)
   : 600000;
+export const CLAVATA_AUTH_TOKEN = process.env.CLAVATA_AUTH_TOKEN ?? "";

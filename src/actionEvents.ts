@@ -8,7 +8,7 @@ import { POST_CHECKS } from "./constants.js";
 export const ActionReportRepo = async (
   did: string,
   label: string,
-  comment: string,
+  comment: string
 ) => {
   if (!did || !label || !comment) {
     logger.error("Invalid parameters for AckLabelRepo");
@@ -43,7 +43,7 @@ export const ActionReportRepo = async (
             "atproto-accept-labelers":
               "did:plc:ar7c4by46qjdydhdevvrndac;redact",
           },
-        },
+        }
       );
     } catch (e) {
       logger.error(e);
@@ -59,7 +59,7 @@ export const CheckReportRepo = async (event: ModEventView) => {
 
   const labels: string[] = Array.from(
     POST_CHECKS,
-    (postCheck) => postCheck.label,
+    (postCheck) => postCheck.label
   );
 
   if (event.createdBy === MOD_DID) {
@@ -71,7 +71,7 @@ export const CheckReportRepo = async (event: ModEventView) => {
       // iterate through the labels
       labels.forEach((label) => {
         const checkPosts = POST_CHECKS.find(
-          (postCheck) => postCheck.label === label,
+          (postCheck) => postCheck.label === label
         );
 
         if (checkPosts?.check.test(comment)) {
@@ -86,7 +86,7 @@ export const CheckReportRepo = async (event: ModEventView) => {
             ActionReportRepo(
               user,
               `${checkPosts!.label}`,
-              `${checkPosts!.comment}`,
+              `${checkPosts!.comment}`
             );
           }
         }

@@ -34,7 +34,7 @@ export const AckReportRepo = async (did: string, subjectType: string) => {
             "atproto-accept-labelers":
               "did:plc:ar7c4by46qjdydhdevvrndac;redact",
           },
-        },
+        }
       );
     } catch (e) {
       logger.error(e);
@@ -45,7 +45,7 @@ export const AckReportRepo = async (did: string, subjectType: string) => {
 export const AckReportPost = async (
   uri: string,
   cid: string,
-  subjectType: string,
+  subjectType: string
 ) => {
   await limit(async () => {
     if (!uri || !cid || !subjectType) {
@@ -78,7 +78,7 @@ export const AckReportPost = async (
             "atproto-accept-labelers":
               "did:plc:ar7c4by46qjdydhdevvrndac;redact",
           },
-        },
+        }
       );
     } catch (e) {
       logger.error(e);
