@@ -139,7 +139,7 @@ export async function evaluateClavataPolicy(text: string): Promise<string[]> {
  * @param identifier The user DID or record URI to annotate.
  * @param eventId The current event id (for logging).
  */
-async function processClavataEvaluation(
+export async function processClavataEvaluation(
   text: string,
   identifier: string,
   eventId: number,
@@ -168,5 +168,3 @@ async function processClavataEvaluation(
     );
   }
 }
-
-export { processClavataEvaluation };
