@@ -132,21 +132,16 @@ export async function evaluateClavataPolicy(text: string): Promise<string[]> {
 /**
  * A helper function to run Clavata evaluation.
  * If labels are returned, it creates annotations using the provided label creator.
- * If no labels are matched (or if evaluation fails), it falls back to auto-acknowledgement.
  *
  * @param text The text to evaluate.
  * @param identifier The user DID or record URI to annotate.
  * @param eventId The current event id (for logging).
- * @param subjectType The subject type (used in the ack function).
- * @param createLabelFn A function that creates a label annotation (e.g. createAccountLabel).
- * @param ackFn A function to auto-acknowledge the report if no labels are matched.
  */
 async function processClavataEvaluation(
   text: string,
   identifier: string,
   eventId: number,
-  subjectType: string,
-  createLabelFn: (id: string, label: string, msg: string) => Promise<void>
+  commentFn: (id: string, comment: string) => Promise<void>
 ): Promise<void> {
   try {
     const labels = await evaluateClavataPolicy(text);
@@ -155,11 +150,15 @@ async function processClavataEvaluation(
         `Event ${eventId}: Clavata policy matched for ${identifier}: ${labels.join(", ")}`
       );
       // Create an annotation for each matched label.
-      for (const label of labels) {
-        await createLabelFn(identifier, label, "Clavata policy evaluation");
+      if (labels.length > 0) {
+        const commentMessage = `Clavata evaluation identified the following labels: ${labels.join(", ")}`;
+        logger.info(
+          `Event ${eventId}: Commenting on ${identifier} with: ${commentMessage}`
+        );
+        await commentFn(identifier, commentMessage);
+      } else {
+        logger.info(`Event ${eventId}: No Clavata match for ${identifier}.`);
       }
-    } else {
-      logger.info(`Event ${eventId}: No labels matched for ${identifier}`);
     }
   } catch (error) {
     logger.error(

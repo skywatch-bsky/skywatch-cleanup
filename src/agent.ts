@@ -15,7 +15,6 @@ export const login = () =>
 
 export const isLoggedIn = login()
   .then((res) => {
-    console.log("Access token:", res.data.accessJwt);
     true;
   })
   .catch(() => false);

@@ -6,8 +6,13 @@ import { AUTOACK_PERIOD, MOD_DID } from "./config.js";
 import { IGNORED_DIDS, ReportCheck, LabelCheck } from "./constants.js";
 import { getEvents } from "./getEvents.js";
 import { ModEventView } from "@atproto/api/dist/client/types/tools/ozone/moderation/defs.js";
-import { createAccountLabel } from "./moderation.js";
+import {
+  createAccountLabel,
+  createAccountComment,
+  createPostComment,
+} from "./moderation.js";
 import { processClavataEvaluation } from "./clavataPolicy.js";
+import { getPostContent } from "./getPosts.js";
 
 let isRunning = true;
 
@@ -40,6 +45,18 @@ async function main() {
               const id = event.id;
               if (event.subject.hasOwnProperty("did")) {
                 const user = event.subject.did as string;
+                // We are erring on the side of annotating anything that is reported
+                // But this could easily be moved later if we wish to eliminate
+                // reports based on additional the simpler criteria first
+                const profile = await getProfiles(user);
+                if (profile?.description) {
+                  await processClavataEvaluation(
+                    profile.description,
+                    user,
+                    id,
+                    createAccountComment
+                  );
+                }
                 // Check if the report account is tombstoned
                 if (event.event.tombstone) {
                   logger.info(
@@ -106,7 +123,6 @@ async function main() {
                   logger.info(`Ignoring DID: ${user}`);
                   await AckReportRepo(user, event.subject.$type);
                 } else {
-                  const profile = await getProfiles(user);
                   if (profile?.description) {
                     if (ReportCheck.test(profile.description)) {
                       logger.info(
@@ -115,19 +131,6 @@ async function main() {
                       await AckReportRepo(user, event.subject.$type);
                     }
                   }
-                }
-                // After going through other checks, check for Clavata evaluation
-                // This could be placed instead in the last else block above
-                // but is placed here so it can be more broadly applied
-                const profile = await getProfiles(user);
-                if (profile?.description) {
-                  await processClavataEvaluation(
-                    profile.description,
-                    user,
-                    id,
-                    event.subject.$type,
-                    createAccountLabel
-                  );
                 }
               } else {
                 logger.warn(
@@ -143,6 +146,15 @@ async function main() {
                 const uri = event.subject.uri as string;
                 const cid = event.subject.cid as string;
                 const user = uri.split("/")[2];
+                const post = await getPostContent(uri);
+                if (post) {
+                  await processClavataEvaluation(
+                    post,
+                    uri,
+                    id,
+                    (uri, comment) => createPostComment(uri, cid, comment)
+                  );
+                }
                 if (event.event.tombstone) {
                   logger.info(
                     `Event ${id}: Auto-acknowledging tombstone event for ${uri} with CID ${cid}`

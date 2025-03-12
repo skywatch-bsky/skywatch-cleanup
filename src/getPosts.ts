@@ -12,26 +12,27 @@ import { agent, isLoggedIn } from "./agent.js";
  * @returns The post text, or null if not found.
  */
 export async function getPostContent(uri: string): Promise<string | null> {
-  await isLoggedIn;
   try {
+    await isLoggedIn;
+
     // Split the URI into its parts.
-    // e.g. "at://did:plc:XYZ/app.bsky.feed.post/3lhlw4gq4uj2t"
+    // Example URI: "at://did:plc:XYZ/app.bsky.feed.post/3lhlw4gq4uj2t"
     const parts = uri.split("/");
     if (parts.length < 5) {
       console.error("Invalid AT URI format:", uri);
       return null;
     }
-    const repo = parts[2]; // DID of the account
-    const collection = parts[3]; // Expected to be "app.bsky.feed.post"
-    // In case the record key contains additional slashes, join all remaining parts.
+    const repo = parts[2]; // the account's DID
+    // We ignore parts[3] since it should be "app.bsky.feed.post" and getPost assumes that collection.
     const rkey = parts.slice(4).join("/");
 
-    // Use your AtpAgent instance (assumed to be named `agent`) to fetch the record.
-    // Adjust the call parameters if your agent's API differs.
-    const response = await agent.getRecord({ repo, collection, rkey });
-    // Depending on your API, the post content may be located under response.data.record.text
-    const postText = response.data.record?.text;
-    return postText || null;
+    // Call getPost with the repo and rkey
+    const response = await agent.getPost({ repo, rkey });
+    // The response is expected to have structure:
+    // { uri: string; cid: string; value: Record }
+    // We cast value to an object that may contain a "text" field.
+    const record = response.value as { text?: string };
+    return record.text || null;
   } catch (error) {
     console.error(`Error fetching post content for URI ${uri}:`, error);
     return null;

@@ -48,3 +48,12 @@ export interface CheckList {
   did: string;
   rkey: string;
 }
+
+export interface Post {
+  did: string;
+  time: number;
+  rkey: string;
+  atURI: string;
+  text: string;
+  cid: string;
+}
