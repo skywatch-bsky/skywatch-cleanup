@@ -1,4 +1,4 @@
-import { Checks } from "./types";
+import { Checks } from "./types.js";
 
 export const ReportCheck = new RegExp(
   "dobolen\\.eu\\.org|onlyfans\\.com|.*getallmylinks\\.com.*|(spam|spammer) bot|porn|sexual|Prostitution|Trafficking|CSAM|OnlyFans ⤵️|impersonation",
