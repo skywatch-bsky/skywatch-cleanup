@@ -62,7 +62,7 @@ async function main() {
                   logger.info(
                     `Event ${id}: Auto-acknowledging tombstone event for ${user}`
                   );
-                  await AckReportRepo(user, event.subject.$type);
+                  await AckReportRepo(user, event.subject.$type, "Account Tombstoned.");
                 } else if (!event.event.tombstone) {
                   // Automatically label accounts reported automatically from the blocklist
                   if (event.createdBy === "did:plc:dbnoyyuzwgps2zr7v2psvp6o") {
@@ -74,6 +74,10 @@ async function main() {
                       "suspect-inauthentic",
                       "Imported from https://bsky.app/profile/did:plc:d7nr65djxrudtdg3tslzfiyr/lists/3lcm6ypfdj72r"
                     );
+                    await AckReportRepo(
+                            user,
+                            "com.atproto.admin.defs#repoRef",
+                            `Report is autolabeled.`);
                   } else {
                     // Check to see if an account already has a label
                     const repoLabels = await checkLabels(user);
@@ -86,7 +90,8 @@ async function main() {
                         );
                         await AckReportRepo(
                           user,
-                          "com.atproto.admin.defs#repoRef"
+                          "com.atproto.admin.defs#repoRef",
+                          `Report for ${user} is out of scope.`
                         );
                       }
                     }
@@ -99,7 +104,11 @@ async function main() {
                   logger.info(
                     `Event ${id}: Out of scope content reported for ${user}`
                   );
-                  await AckReportRepo(user, event.subject.$type);
+                  await AckReportRepo(
+                    user,
+                    event.subject.$type,
+                    `Report for ${user} is out of scope.`
+                  );
                   // Automatically acknowledge reports with comments indicating out of scope content
                 } else if (event.event.hasOwnProperty("comment")) {
                   const comment = event.event.comment as string;
@@ -110,7 +119,11 @@ async function main() {
                       logger.info(
                         `Event ${id}: Comment indicates out of scope report for ${user}`
                       );
-                      await AckReportRepo(user, event.subject.$type);
+                      await AckReportRepo(
+                        user,
+                        event.subject.$type,
+                        `Report for ${user} is out of scope.`
+                      );
                     }
                   }
                 } else if (!event.event.hasOwnProperty("comment")) {
@@ -118,10 +131,18 @@ async function main() {
                   logger.info(
                     `Event ${id}: Auto-acknowledging report for ${user} with no comment`
                   );
-                  await AckReportRepo(user, event.subject.$type);
+                  await AckReportRepo(
+                    user,
+                    event.subject.$type,
+                    `Report for ${user} is out of scope due to lack of comment.`
+                  );
                 } else if (IGNORED_DIDS.includes(user)) {
                   logger.info(`Ignoring DID: ${user}`);
-                  await AckReportRepo(user, event.subject.$type);
+                  await AckReportRepo(
+                    user,
+                    event.subject.$type,
+                    `Report for ${user} is out of scope due to being on allowList.`
+                  );
                 } else {
                   const profile = await getProfiles(user);
                   if (profile?.description) {
@@ -129,7 +150,11 @@ async function main() {
                       logger.info(
                         `Event ${id}: Comment indicates out of scope report for ${user}`
                       );
-                      await AckReportRepo(user, event.subject.$type);
+                      await AckReportRepo(
+                        user,
+                        event.subject.$type,
+                        `Report for ${user} is out of scope.`
+                      );
                     }
                   }
                 }
