@@ -54,30 +54,51 @@ async function main() {
                     profile.description,
                     user,
                     id,
-                    createAccountComment
+                    createAccountComment,
                   );
                 }
                 // Check if the report account is tombstoned
                 if (event.event.tombstone) {
                   logger.info(
-                    `Event ${id}: Auto-acknowledging tombstone event for ${user}`
+                    `Event ${id}: Auto-acknowledging tombstone event for ${user}`,
                   );
-                  await AckReportRepo(user, event.subject.$type, "Account Tombstoned.");
+                  await AckReportRepo(
+                    user,
+                    event.subject.$type,
+                    "Account Tombstoned.",
+                  );
                 } else if (!event.event.tombstone) {
                   // Automatically label accounts reported automatically from the blocklist
                   if (event.createdBy === "did:plc:dbnoyyuzwgps2zr7v2psvp6o") {
-                    logger.info(
-                      `Event ${id}: Labeling report for ${user} due to inclusion on imported blocklist.`
-                    );
-                    await createAccountLabel(
-                      user,
-                      "suspect-inauthentic",
-                      "Imported from https://bsky.app/profile/did:plc:d7nr65djxrudtdg3tslzfiyr/lists/3lcm6ypfdj72r"
-                    );
-                    await AckReportRepo(
-                            user,
-                            "com.atproto.admin.defs#repoRef",
-                            `Report is autolabeled.`);
+                    if (event.event.hasOwnProperty("comment")) {
+                      const comment = event.event.comment as string;
+                      if (
+                        comment.includes("invalid.experimental.threatindicator")
+                      ) {
+                        logger.info(
+                          `Event ${id}: Auto-acknowledging experimental event for ${user}`,
+                        );
+                        await AckReportRepo(
+                          user,
+                          event.subject.$type,
+                          "Experimental Event",
+                        );
+                      }
+                    } else {
+                      logger.info(
+                        `Event ${id}: Labeling report for ${user} due to inclusion on imported blocklist.`,
+                      );
+                      await createAccountLabel(
+                        user,
+                        "suspect-inauthentic",
+                        "Imported from https://bsky.app/profile/did:plc:d7nr65djxrudtdg3tslzfiyr/lists/3lcm6ypfdj72r",
+                      );
+                      await AckReportRepo(
+                        user,
+                        "com.atproto.admin.defs#repoRef",
+                        `Report is autolabeled.`,
+                      );
+                    }
                   } else {
                     // Check to see if an account already has a label
                     const repoLabels = await checkLabels(user);
@@ -86,12 +107,12 @@ async function main() {
                       const value = label.val;
                       if (LabelCheck.includes(value)) {
                         logger.info(
-                          `${id}, Found ${value} on ${user}. Acknowledging.`
+                          `${id}, Found ${value} on ${user}. Acknowledging.`,
                         );
                         await AckReportRepo(
                           user,
                           "com.atproto.admin.defs#repoRef",
-                          `Report for ${user} is out of scope.`
+                          `Report for ${user} is out of scope.`,
                         );
                       }
                     }
@@ -102,12 +123,12 @@ async function main() {
                   "com.atproto.moderation.defs#reasonSexual"
                 ) {
                   logger.info(
-                    `Event ${id}: Out of scope content reported for ${user}`
+                    `Event ${id}: Out of scope content reported for ${user}`,
                   );
                   await AckReportRepo(
                     user,
                     event.subject.$type,
-                    `Report for ${user} is out of scope.`
+                    `Report for ${user} is out of scope.`,
                   );
                   // Automatically acknowledge reports with comments indicating out of scope content
                 } else if (event.event.hasOwnProperty("comment")) {
@@ -117,50 +138,50 @@ async function main() {
                       event.subject.$type === "com.atproto.admin.defs#repoRef"
                     ) {
                       logger.info(
-                        `Event ${id}: Comment indicates out of scope report for ${user}`
+                        `Event ${id}: Comment indicates out of scope report for ${user}`,
                       );
                       await AckReportRepo(
                         user,
                         event.subject.$type,
-                        `Report for ${user} is out of scope.`
+                        `Report for ${user} is out of scope.`,
                       );
                     }
                   }
                 } else if (!event.event.hasOwnProperty("comment")) {
                   // Automatically acknowledge reports with no comments - these are generally useless
                   logger.info(
-                    `Event ${id}: Auto-acknowledging report for ${user} with no comment`
+                    `Event ${id}: Auto-acknowledging report for ${user} with no comment`,
                   );
                   await AckReportRepo(
                     user,
                     event.subject.$type,
-                    `Report for ${user} is out of scope due to lack of comment.`
+                    `Report for ${user} is out of scope due to lack of comment.`,
                   );
                 } else if (IGNORED_DIDS.includes(user)) {
                   logger.info(`Ignoring DID: ${user}`);
                   await AckReportRepo(
                     user,
                     event.subject.$type,
-                    `Report for ${user} is out of scope due to being on allowList.`
+                    `Report for ${user} is out of scope due to being on allowList.`,
                   );
                 } else {
                   const profile = await getProfiles(user);
                   if (profile?.description) {
                     if (ReportCheck.test(profile.description)) {
                       logger.info(
-                        `Event ${id}: Comment indicates out of scope report for ${user}`
+                        `Event ${id}: Comment indicates out of scope report for ${user}`,
                       );
                       await AckReportRepo(
                         user,
                         event.subject.$type,
-                        `Report for ${user} is out of scope.`
+                        `Report for ${user} is out of scope.`,
                       );
                     }
                   }
                 }
               } else {
                 logger.warn(
-                  `Event ${id}: DID expected but not found for report`
+                  `Event ${id}: DID expected but not found for report`,
                 );
               }
             }
@@ -182,13 +203,13 @@ async function main() {
                       post,
                       uri,
                       id,
-                      (uri, comment) => createPostComment(uri, cid, comment)
+                      (uri, comment) => createPostComment(uri, cid, comment),
                     );
                   }
                 }
                 if (event.event.tombstone) {
                   logger.info(
-                    `Event ${id}: Auto-acknowledging tombstone event for ${uri} with CID ${cid}`
+                    `Event ${id}: Auto-acknowledging tombstone event for ${uri} with CID ${cid}`,
                   );
                   await AckReportPost(uri, cid, event.subject.$type);
                 } else if (
@@ -196,21 +217,21 @@ async function main() {
                   "com.atproto.moderation.defs#reasonSexual"
                 ) {
                   logger.info(
-                    `Event ${id}: Out of scope record reported with ${uri} with CID ${cid}`
+                    `Event ${id}: Out of scope record reported with ${uri} with CID ${cid}`,
                   );
                   await AckReportPost(uri, cid, event.subject.$type);
                 } else if (event.event.hasOwnProperty("comment")) {
                   const comment = event.event.comment as string;
                   if (ReportCheck.test(comment)) {
                     logger.info(
-                      `Event ${id}: Comment indicates out of scope record reported with ${uri} with CID ${cid}`
+                      `Event ${id}: Comment indicates out of scope record reported with ${uri} with CID ${cid}`,
                     );
                     await AckReportPost(uri, cid, event.subject.$type);
                   }
                 } else if (!event.event.hasOwnProperty("comment")) {
                   // Automatically acknowledge reports with no comments - these are generally useless
                   logger.info(
-                    `Event ${id}: Auto-acknowledging report for ${uri} with no comment`
+                    `Event ${id}: Auto-acknowledging report for ${uri} with no comment`,
                   );
                   await AckReportPost(uri, cid, event.subject.$type);
                 } else if (IGNORED_DIDS.includes(user)) {
@@ -219,7 +240,7 @@ async function main() {
                 }
               } else {
                 logger.warn(
-                  `Event ${id}: URI expected but not found for report`
+                  `Event ${id}: URI expected but not found for report`,
                 );
               }
             }
@@ -244,7 +265,7 @@ async function main() {
 
             // Fin
           }
-        }) ?? []
+        }) ?? [],
       );
     } catch (e) {
       logger.error(e);
