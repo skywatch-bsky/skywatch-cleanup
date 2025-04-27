@@ -73,7 +73,9 @@ async function main() {
                     if (event.event.hasOwnProperty("comment")) {
                       const comment = event.event.comment as string;
                       if (
-                        comment.includes("invalid.experimental.threatindicator")
+                        comment.includes(
+                          "post with spam url associated with bot",
+                        )
                       ) {
                         logger.info(
                           `Event ${id}: Auto-acknowledging experimental event for ${user}`,
