@@ -70,6 +70,7 @@ async function main() {
                 } else if (!event.event.tombstone) {
                   // Automatically label accounts reported automatically from the blocklist
                   if (event.createdBy === "did:plc:dbnoyyuzwgps2zr7v2psvp6o") {
+                    // avoid automatically labeling accounts with certain comments in metadata
                     if (event.event.hasOwnProperty("comment")) {
                       const comment = event.event.comment as string;
                       if (
@@ -85,21 +86,21 @@ async function main() {
                           event.subject.$type,
                           "Experimental Event",
                         );
+                      } else {
+                        logger.info(
+                          `Event ${id}: Labeling report for ${user} due to inclusion on imported blocklist.`,
+                        );
+                        await createAccountLabel(
+                          user,
+                          "suspect-inauthentic",
+                          "Imported from https://bsky.app/profile/did:plc:d7nr65djxrudtdg3tslzfiyr/lists/3lcm6ypfdj72r",
+                        );
+                        await AckReportRepo(
+                          user,
+                          "com.atproto.admin.defs#repoRef",
+                          `Report is autolabeled.`,
+                        );
                       }
-                    } else {
-                      logger.info(
-                        `Event ${id}: Labeling report for ${user} due to inclusion on imported blocklist.`,
-                      );
-                      await createAccountLabel(
-                        user,
-                        "suspect-inauthentic",
-                        "Imported from https://bsky.app/profile/did:plc:d7nr65djxrudtdg3tslzfiyr/lists/3lcm6ypfdj72r",
-                      );
-                      await AckReportRepo(
-                        user,
-                        "com.atproto.admin.defs#repoRef",
-                        `Report is autolabeled.`,
-                      );
                     }
                   } else {
                     // Check to see if an account already has a label
