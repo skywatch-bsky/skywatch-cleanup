@@ -48,14 +48,17 @@ async function main() {
                 // We are erring on the side of annotating anything that is reported
                 // But this could easily be moved later if we wish to eliminate
                 // reports based on additional the simpler criteria first
-                const profile = await getProfiles(user);
-                if (profile?.description) {
-                  await processClavataEvaluation(
-                    profile.description,
-                    user,
-                    id,
-                    createAccountComment,
-                  );
+                if (event.createdBy !== "did:plc:dbnoyyuzwgps2zr7v2psvp6o") {
+                  // Bypassing reports made by automated suspected-inauthentic reporter.
+                  const profile = await getProfiles(user);
+                  if (profile?.description) {
+                    await processClavataEvaluation(
+                      profile.description,
+                      user,
+                      id,
+                      createAccountComment,
+                    );
+                  }
                 }
                 // Check if the report account is tombstoned
                 if (event.event.tombstone) {
