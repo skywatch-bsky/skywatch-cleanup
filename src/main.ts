@@ -39,7 +39,9 @@ async function main() {
       await Promise.all(
         events?.map(async (event: ModEventView) => {
           // Check for open reports
-          if ((event.event.status = "tools.ozone.moderation.defs#reviewOpen")) {
+          if (
+            event.event.$type === "tools.ozone.moderation.defs#modEventReport"
+          ) {
             // Check for reports on user accounts
             if (event.subject.$type === "com.atproto.admin.defs#repoRef") {
               const id = event.id;
@@ -48,14 +50,19 @@ async function main() {
                 // We are erring on the side of annotating anything that is reported
                 // But this could easily be moved later if we wish to eliminate
                 // reports based on additional the simpler criteria first
-                const profile = await getProfiles(user);
-                if (profile?.description) {
-                  await processClavataEvaluation(
-                    profile.description,
-                    user,
-                    id,
-                    createAccountComment,
-                  );
+                if (event.createdBy === "did:plc:dbnoyyuzwgps2zr7v2psvp6o") {
+                  // Bypassing reports made by automated suspected-inauthentic reporter.
+                  logger.info(`Bypassing Clavata for report ${id} on ${user}`);
+                } else {
+                  const profile = await getProfiles(user);
+                  if (profile?.description) {
+                    await processClavataEvaluation(
+                      profile.description,
+                      user,
+                      id,
+                      createAccountComment,
+                    );
+                  }
                 }
                 // Check if the report account is tombstoned
                 if (event.event.tombstone) {
