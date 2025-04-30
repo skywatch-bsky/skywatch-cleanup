@@ -74,60 +74,43 @@ async function main() {
                     event.subject.$type,
                     "Account Tombstoned.",
                   );
-                } else if (!event.event.tombstone) {
-                  // Automatically label accounts reported automatically from the blocklist
-                  if (event.createdBy === "did:plc:dbnoyyuzwgps2zr7v2psvp6o") {
-                    // avoid automatically labeling accounts with certain comments in metadata
-                    if (event.event.hasOwnProperty("comment")) {
-                      const comment = event.event.comment as string;
-                      if (
-                        comment.includes(
-                          "post with spam url associated with bot",
-                        )
-                      ) {
-                        logger.info(
-                          `Event ${id}: Auto-acknowledging experimental event for ${user}`,
-                        );
-                        await AckReportRepo(
-                          user,
-                          event.subject.$type,
-                          "Experimental Event",
-                        );
-                      } else {
-                        logger.info(
-                          `Event ${id}: Labeling report for ${user} due to inclusion on imported blocklist.`,
-                        );
-                        await createAccountLabel(
-                          user,
-                          "suspect-inauthentic",
-                          "Imported from https://bsky.app/profile/did:plc:d7nr65djxrudtdg3tslzfiyr/lists/3lcm6ypfdj72r",
-                        );
-                        await AckReportRepo(
-                          user,
-                          "com.atproto.admin.defs#repoRef",
-                          `Report is autolabeled.`,
-                        );
-                      }
-                    }
-                  } else {
-                    // Check to see if an account already has a label
-                    const repoLabels = await checkLabels(user);
-
-                    for (const label of repoLabels || []) {
-                      const value = label.val;
-                      if (LabelCheck.includes(value)) {
-                        logger.info(
-                          `${id}, Found ${value} on ${user}. Acknowledging.`,
-                        );
-                        await AckReportRepo(
-                          user,
-                          "com.atproto.admin.defs#repoRef",
-                          `Report for ${user} is out of scope.`,
-                        );
-                      }
+                  return;
+                }
+                // Automatically label accounts reported automatically from the blocklist
+                if (event.createdBy === "did:plc:dbnoyyuzwgps2zr7v2psvp6o") {
+                  // avoid automatically labeling accounts with certain comments in metadata
+                  if (event.event.hasOwnProperty("comment")) {
+                    const comment = event.event.comment as string;
+                    if (
+                      comment.includes("post with spam url associated with bot")
+                    ) {
+                      logger.info(
+                        `Event ${id}: Auto-acknowledging experimental event for ${user}`,
+                      );
+                      await AckReportRepo(
+                        user,
+                        event.subject.$type,
+                        "Experimental Event",
+                      );
+                    } else {
+                      logger.info(
+                        `Event ${id}: Labeling report for ${user} due to inclusion on imported blocklist.`,
+                      );
+                      await createAccountLabel(
+                        user,
+                        "suspect-inauthentic",
+                        "Imported from https://bsky.app/profile/did:plc:d7nr65djxrudtdg3tslzfiyr/lists/3lcm6ypfdj72r",
+                      );
+                      await AckReportRepo(
+                        user,
+                        "com.atproto.admin.defs#repoRef",
+                        `Report is autolabeled.`,
+                      );
                     }
                   }
-                } else if (
+                }
+
+                if (
                   // Automatically acknowledge reports with sexual content
                   event.event.reportType ===
                   "com.atproto.moderation.defs#reasonSexual"
@@ -140,8 +123,11 @@ async function main() {
                     event.subject.$type,
                     `Report for ${user} is out of scope.`,
                   );
+                  return;
                   // Automatically acknowledge reports with comments indicating out of scope content
-                } else if (event.event.hasOwnProperty("comment")) {
+                }
+
+                if (event.event.hasOwnProperty("comment")) {
                   const comment = event.event.comment as string;
                   if (ReportCheck.test(comment)) {
                     if (
@@ -155,38 +141,18 @@ async function main() {
                         event.subject.$type,
                         `Report for ${user} is out of scope.`,
                       );
+                      return;
                     }
                   }
-                } else if (!event.event.hasOwnProperty("comment")) {
-                  // Automatically acknowledge reports with no comments - these are generally useless
-                  logger.info(
-                    `Event ${id}: Auto-acknowledging report for ${user} with no comment`,
-                  );
-                  await AckReportRepo(
-                    user,
-                    event.subject.$type,
-                    `Report for ${user} is out of scope due to lack of comment.`,
-                  );
-                } else if (IGNORED_DIDS.includes(user)) {
-                  logger.info(`Ignoring DID: ${user}`);
-                  await AckReportRepo(
-                    user,
-                    event.subject.$type,
-                    `Report for ${user} is out of scope due to being on allowList.`,
-                  );
-                } else {
-                  const profile = await getProfiles(user);
-                  if (profile?.description) {
-                    if (ReportCheck.test(profile.description)) {
-                      logger.info(
-                        `Event ${id}: Comment indicates out of scope report for ${user}`,
-                      );
-                      await AckReportRepo(
-                        user,
-                        event.subject.$type,
-                        `Report for ${user} is out of scope.`,
-                      );
-                    }
+
+                  if (IGNORED_DIDS.includes(user)) {
+                    logger.info(`Ignoring DID: ${user}`);
+                    await AckReportRepo(
+                      user,
+                      event.subject.$type,
+                      `Report for ${user} is out of scope due to being on allowList.`,
+                    );
+                    return;
                   }
                 }
               } else {
@@ -217,12 +183,16 @@ async function main() {
                     );
                   }
                 }
+
                 if (event.event.tombstone) {
                   logger.info(
                     `Event ${id}: Auto-acknowledging tombstone event for ${uri} with CID ${cid}`,
                   );
                   await AckReportPost(uri, cid, event.subject.$type);
-                } else if (
+                  return;
+                }
+
+                if (
                   event.event.reportType ===
                   "com.atproto.moderation.defs#reasonSexual"
                 ) {
@@ -230,23 +200,18 @@ async function main() {
                     `Event ${id}: Out of scope record reported with ${uri} with CID ${cid}`,
                   );
                   await AckReportPost(uri, cid, event.subject.$type);
-                } else if (event.event.hasOwnProperty("comment")) {
+                  return;
+                }
+
+                if (event.event.hasOwnProperty("comment")) {
                   const comment = event.event.comment as string;
                   if (ReportCheck.test(comment)) {
                     logger.info(
                       `Event ${id}: Comment indicates out of scope record reported with ${uri} with CID ${cid}`,
                     );
                     await AckReportPost(uri, cid, event.subject.$type);
+                    return;
                   }
-                } else if (!event.event.hasOwnProperty("comment")) {
-                  // Automatically acknowledge reports with no comments - these are generally useless
-                  logger.info(
-                    `Event ${id}: Auto-acknowledging report for ${uri} with no comment`,
-                  );
-                  await AckReportPost(uri, cid, event.subject.$type);
-                } else if (IGNORED_DIDS.includes(user)) {
-                  logger.info(`Event ${id}:Ignoring DID: ${user}`);
-                  await AckReportRepo(user, event.subject.$type);
                 }
               } else {
                 logger.warn(
