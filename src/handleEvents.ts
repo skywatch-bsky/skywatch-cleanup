@@ -88,8 +88,6 @@ export async function handleRepoReport(
       return { success: true, message: "Report acknowledged." };
     }
 
-    /*
-
     // Send to processClavataEvaluation
     if (
       event.createdBy !== "did:plc:dbnoyyuzwgps2zr7v2psvp6o" &&
@@ -108,7 +106,6 @@ export async function handleRepoReport(
         message: "Report sent to Clavata AI",
       };
     }
-    */
 
     // Process Wencil Blocklist
     if (
