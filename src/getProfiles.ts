@@ -1,25 +1,26 @@
 import { agent, isLoggedIn } from "./agent.js";
 import { limit } from "./rateLimit.js";
 import { logger } from "./logger.js";
-import { userReport } from "./types.js";
+import { AppBskyActorDefs } from "@atproto/api";
 
-export const getProfiles = async (did: string) => {
+export const getProfiles = async (
+  did: string,
+): Promise<AppBskyActorDefs.ProfileViewDetailed | undefined> => {
   try {
     await isLoggedIn;
 
-    const profile = await limit(() =>
+    let profile: AppBskyActorDefs.ProfileViewDetailed;
+
+    const resp = await limit(() =>
       agent.app.bsky.actor.getProfile({
         actor: did,
       }),
     );
 
-    if (profile.success) {
-      const user: userReport = {
-        did: profile.data.did,
-        displayName: profile.data.displayName,
-        description: profile.data.description,
-      };
-      return user;
+    profile = resp.data;
+
+    if (resp.success) {
+      return profile;
     } else {
       logger.info(`Profile not found: ${did}`);
       return;
@@ -39,3 +40,32 @@ export const getProfiles = async (did: string) => {
     }
   }
 };
+
+export function hasProfileLabel(profile: any, labelToFind: string): boolean {
+  // Safety check for null or undefined
+  if (!profile || !profile.labels) {
+    return false;
+  }
+
+  try {
+    // Get all label values
+    const labelValues = profile.labels.map((label: any) => label.value);
+
+    // Check if the array includes our label
+    // Don't call the label as a function! Just compare it as a string
+    return labelValues.indexOf(labelToFind) !== -1;
+
+    // Alternative approach using a loop to avoid any potential issues
+    /*
+    for (const label of profile.labels) {
+      if (label && label.value === labelToFind) {
+        return true;
+      }
+    }
+    return false;
+    */
+  } catch (error) {
+    console.error(`Error checking for label '${labelToFind}':`, error);
+    return false;
+  }
+}

@@ -1,18 +1,13 @@
 import { logger } from "./logger.js";
-import { getProfiles } from "./getProfiles.js";
-import { AckReportRepo, AckReportPost } from "./ackEvents.js";
-import { checkLabels } from "./getRepo.js";
-import { AUTOACK_PERIOD, MOD_DID } from "./config.js";
-import { IGNORED_DIDS, ReportCheck, LabelCheck } from "./constants.js";
+import { AUTOACK_PERIOD } from "./config.js";
 import { getEvents } from "./getEvents.js";
-import { ModEventView } from "@atproto/api/dist/client/types/tools/ozone/moderation/defs.js";
+import { handleRepoReport, handlePostReport } from "./handleEvents.js";
+import { handleRepoStatus } from "./handleStatus.js";
 import {
-  createAccountLabel,
-  createAccountComment,
-  createPostComment,
-} from "./moderation.js";
-import { processClavataEvaluation } from "./clavataPolicy.js";
-import { getPostContent } from "./getPosts.js";
+  ModEventView,
+  SubjectStatusView,
+} from "@atproto/api/dist/client/types/tools/ozone/moderation/defs.js";
+import { getStatus } from "./getStatus.js";
 
 let isRunning = true;
 
@@ -33,217 +28,44 @@ async function main() {
     const stopDate = new Date(Date.now() - AUTOACK_PERIOD).toISOString();
     logger.info(`Checking for reports between ${startDate} and ${stopDate}`);
 
+    const statuses = await getStatus(startDate, stopDate);
+    if (statuses) {
+      logger.info(`Found ${statuses.length} statuses`);
+      try {
+        await Promise.all(
+          statuses?.map(async (status: SubjectStatusView) => {
+            await handleRepoStatus(status);
+          }),
+        );
+      } catch (e) {
+        logger.error("Error handling statuses", e);
+      }
+    } else {
+      logger.info("No statuses found");
+    }
+
     const events = await getEvents(startDate, stopDate);
-
-    try {
-      await Promise.all(
-        events?.map(async (event: ModEventView) => {
-          // Check for open reports
-          if (
-            event.event.$type === "tools.ozone.moderation.defs#modEventReport"
-          ) {
-            // Check for reports on user accounts
-            if (event.subject.$type === "com.atproto.admin.defs#repoRef") {
-              const id = event.id;
-              if (event.subject.hasOwnProperty("did")) {
-                const user = event.subject.did as string;
-                // We are erring on the side of annotating anything that is reported
-                // But this could easily be moved later if we wish to eliminate
-                // reports based on additional the simpler criteria first
-                if (event.createdBy === "did:plc:dbnoyyuzwgps2zr7v2psvp6o") {
-                  // Bypassing reports made by automated suspected-inauthentic reporter.
-                  logger.info(`Bypassing Clavata for report ${id} on ${user}`);
-                } else {
-                  const profile = await getProfiles(user);
-                  if (profile?.description) {
-                    await processClavataEvaluation(
-                      profile.description,
-                      user,
-                      id,
-                      createAccountComment,
-                    );
-                  }
-                }
-                // Check if the report account is tombstoned
-                if (event.event.tombstone) {
-                  logger.info(
-                    `Event ${id}: Auto-acknowledging tombstone event for ${user}`,
-                  );
-                  await AckReportRepo(
-                    user,
-                    event.subject.$type,
-                    "Account Tombstoned.",
-                  );
-                  return;
-                }
-                // Automatically label accounts reported automatically from the blocklist
-                if (event.createdBy === "did:plc:dbnoyyuzwgps2zr7v2psvp6o") {
-                  // avoid automatically labeling accounts with certain comments in metadata
-                  if (event.event.hasOwnProperty("comment")) {
-                    const comment = event.event.comment as string;
-                    if (
-                      comment.includes("post with spam url associated with bot")
-                    ) {
-                      logger.info(
-                        `Event ${id}: Auto-acknowledging experimental event for ${user}`,
-                      );
-                      await AckReportRepo(
-                        user,
-                        event.subject.$type,
-                        "Experimental Event",
-                      );
-                    } else {
-                      logger.info(
-                        `Event ${id}: Labeling report for ${user} due to inclusion on imported blocklist.`,
-                      );
-                      await createAccountLabel(
-                        user,
-                        "suspect-inauthentic",
-                        "Imported from https://bsky.app/profile/did:plc:d7nr65djxrudtdg3tslzfiyr/lists/3lcm6ypfdj72r",
-                      );
-                      await AckReportRepo(
-                        user,
-                        "com.atproto.admin.defs#repoRef",
-                        `Report is autolabeled.`,
-                      );
-                    }
-                  }
-                }
-
-                if (
-                  // Automatically acknowledge reports with sexual content
-                  event.event.reportType ===
-                  "com.atproto.moderation.defs#reasonSexual"
-                ) {
-                  logger.info(
-                    `Event ${id}: Out of scope content reported for ${user}`,
-                  );
-                  await AckReportRepo(
-                    user,
-                    event.subject.$type,
-                    `Report for ${user} is out of scope.`,
-                  );
-                  return;
-                  // Automatically acknowledge reports with comments indicating out of scope content
-                }
-
-                if (event.event.hasOwnProperty("comment")) {
-                  const comment = event.event.comment as string;
-                  if (ReportCheck.test(comment)) {
-                    if (
-                      event.subject.$type === "com.atproto.admin.defs#repoRef"
-                    ) {
-                      logger.info(
-                        `Event ${id}: Comment indicates out of scope report for ${user}`,
-                      );
-                      await AckReportRepo(
-                        user,
-                        event.subject.$type,
-                        `Report for ${user} is out of scope.`,
-                      );
-                      return;
-                    }
-                  }
-
-                  if (IGNORED_DIDS.includes(user)) {
-                    logger.info(`Ignoring DID: ${user}`);
-                    await AckReportRepo(
-                      user,
-                      event.subject.$type,
-                      `Report for ${user} is out of scope due to being on allowList.`,
-                    );
-                    return;
-                  }
-                }
-              } else {
-                logger.warn(
-                  `Event ${id}: DID expected but not found for report`,
-                );
+    if (events) {
+      try {
+        await Promise.all(
+          events?.map(async (event: ModEventView) => {
+            // Check for open reports
+            if (
+              event.event.$type === "tools.ozone.moderation.defs#modEventReport"
+            ) {
+              // Check for reports on user accounts
+              if (event.subject.$type === "com.atproto.admin.defs#repoRef") {
+                await handleRepoReport(event);
+              } else if (event.subject.$type === "com.atproto.repo.strongRef") {
+                // Check for reports on records
+                await handlePostReport(event);
               }
             }
-
-            // Check for reports on records
-            if (event.subject.$type === "com.atproto.repo.strongRef") {
-              const id = event.id;
-              if (event.subject.hasOwnProperty("uri")) {
-                const uri = event.subject.uri as string;
-                const cid = event.subject.cid as string;
-                const user = uri.split("/")[2];
-                // Right now have only implemented this for posts
-                // other reportable content types will need to be added
-                if (uri.split("/")[3] == "app.bsky.feed.post") {
-                  const post = await getPostContent(uri);
-                  // Like above, we are erring on the side of annotating anything that is reported
-                  if (post) {
-                    await processClavataEvaluation(
-                      post,
-                      uri,
-                      id,
-                      (uri, comment) => createPostComment(uri, cid, comment),
-                    );
-                  }
-                }
-
-                if (event.event.tombstone) {
-                  logger.info(
-                    `Event ${id}: Auto-acknowledging tombstone event for ${uri} with CID ${cid}`,
-                  );
-                  await AckReportPost(uri, cid, event.subject.$type);
-                  return;
-                }
-
-                if (
-                  event.event.reportType ===
-                  "com.atproto.moderation.defs#reasonSexual"
-                ) {
-                  logger.info(
-                    `Event ${id}: Out of scope record reported with ${uri} with CID ${cid}`,
-                  );
-                  await AckReportPost(uri, cid, event.subject.$type);
-                  return;
-                }
-
-                if (event.event.hasOwnProperty("comment")) {
-                  const comment = event.event.comment as string;
-                  if (ReportCheck.test(comment)) {
-                    logger.info(
-                      `Event ${id}: Comment indicates out of scope record reported with ${uri} with CID ${cid}`,
-                    );
-                    await AckReportPost(uri, cid, event.subject.$type);
-                    return;
-                  }
-                }
-              } else {
-                logger.warn(
-                  `Event ${id}: URI expected but not found for report`,
-                );
-              }
-            }
-
-            // Check for Reports that can be actioned
-            /*
-            if (event.subject.$type === "com.atproto.admin.defs#repoRef") {
-              const id = event.id;
-              if (event.subject.hasOwnProperty("did")) {
-                const user = event.subject.did as string;
-                // Check for reports on user accounts
-                if (event.event.tombstone) {
-                  return;
-                } else if (
-                  event.createdBy === MOD_DID &&
-                  !IGNORED_DIDS.includes(user)
-                ) {
-                  await CheckReportRepo(event);
-                }
-              }
-              } */
-
-            // Fin
-          }
-        }) ?? [],
-      );
-    } catch (e) {
-      logger.error(e);
+          }) ?? [],
+        );
+      } catch (e) {
+        logger.error(e);
+      }
     }
 
     logger.info("Finished run at:", new Date().toISOString());

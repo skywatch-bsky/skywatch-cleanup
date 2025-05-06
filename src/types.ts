@@ -5,6 +5,12 @@ export interface userReport {
   did: SubjectStatusView["did"];
   displayName?: string;
   description?: string;
+  handle?: string;
+}
+
+export interface ReportHandlingResult {
+  success: boolean;
+  message: string;
 }
 
 interface Report {
