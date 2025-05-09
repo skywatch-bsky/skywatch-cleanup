@@ -1,13 +1,13 @@
 import { agent, isLoggedIn } from "./agent.js";
-import { MOD_DID } from "./config.js";
 import { limit } from "./rateLimit.js";
 import logger from "./logger.js";
+import { getModHeaders } from "./constants.js";
 
 export const createPostLabel = async (
   uri: string,
   cid: string,
   label: string,
-  comment: string
+  comment: string,
 ) => {
   await isLoggedIn;
   await limit(async () => {
@@ -30,14 +30,7 @@ export const createPostLabel = async (
           createdBy: `${agent.did}`,
           createdAt: new Date().toISOString(),
         },
-        {
-          encoding: "application/json",
-          headers: {
-            "atproto-proxy": `${MOD_DID!}#atproto_labeler`,
-            "atproto-accept-labelers":
-              "did:plc:ar7c4by46qjdydhdevvrndac;redact",
-          },
-        }
+        { headers: getModHeaders() },
       );
     } catch (e) {
       console.error(e);
@@ -48,7 +41,7 @@ export const createPostLabel = async (
 export const createAccountLabel = async (
   did: string,
   label: string,
-  comment: string
+  comment: string,
 ) => {
   await isLoggedIn;
   await limit(async () => {
@@ -70,14 +63,7 @@ export const createAccountLabel = async (
           createdBy: `${agent.did}`,
           createdAt: new Date().toISOString(),
         },
-        {
-          encoding: "application/json",
-          headers: {
-            "atproto-proxy": `${MOD_DID!}#atproto_labeler`,
-            "atproto-accept-labelers":
-              "did:plc:ar7c4by46qjdydhdevvrndac;redact",
-          },
-        }
+        { headers: getModHeaders() },
       );
     } catch (e) {
       console.error(e);
@@ -104,14 +90,7 @@ export const createAccountComment = async (did: string, comment: string) => {
           createdBy: `${agent.did}`,
           createdAt: new Date().toISOString(),
         },
-        {
-          encoding: "application/json",
-          headers: {
-            "atproto-proxy": `${MOD_DID!}#atproto_labeler`,
-            "atproto-accept-labelers":
-              "did:plc:ar7c4by46qjdydhdevvrndac;redact",
-          },
-        }
+        { headers: getModHeaders() },
       );
     } catch (e) {
       console.error(e);
@@ -122,7 +101,7 @@ export const createAccountComment = async (did: string, comment: string) => {
 export const createPostComment = async (
   uri: string,
   cid: string,
-  comment: string
+  comment: string,
 ) => {
   await isLoggedIn;
   await limit(async () => {
@@ -142,14 +121,7 @@ export const createPostComment = async (
           createdBy: `${agent.did}`,
           createdAt: new Date().toISOString(),
         },
-        {
-          encoding: "application/json",
-          headers: {
-            "atproto-proxy": `${MOD_DID!}#atproto_labeler`,
-            "atproto-accept-labelers":
-              "did:plc:ar7c4by46qjdydhdevvrndac;redact",
-          },
-        }
+        { headers: getModHeaders() },
       );
     } catch (e) {
       console.error(e);
@@ -177,14 +149,7 @@ export const createAccountReport = async (did: string, comment: string) => {
           createdBy: `${agent.did}`,
           createdAt: new Date().toISOString(),
         },
-        {
-          encoding: "application/json",
-          headers: {
-            "atproto-proxy": `${MOD_DID!}#atproto_labeler`,
-            "atproto-accept-labelers":
-              "did:plc:ar7c4by46qjdydhdevvrndac;redact",
-          },
-        }
+        { headers: getModHeaders() },
       );
     } catch (e) {
       console.error(e);

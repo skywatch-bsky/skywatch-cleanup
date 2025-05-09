@@ -1,7 +1,11 @@
 import { logger } from "./logger.js";
 import { AUTOACK_PERIOD } from "./config.js";
 import { getEvents } from "./getEvents.js";
-import { handleRepoReport, handlePostReport } from "./handleEvents.js";
+import {
+  handleRepoReport,
+  handlePostReport,
+  handleImportReport,
+} from "./handleEvents.js";
 import { handleRepoStatus } from "./handleStatus.js";
 import {
   ModEventView,
@@ -55,10 +59,11 @@ async function main() {
             ) {
               // Check for reports on user accounts
               if (event.subject.$type === "com.atproto.admin.defs#repoRef") {
-                await handleRepoReport(event);
+                // await handleRepoReport(event);
+                await handleImportReport(event);
               } else if (event.subject.$type === "com.atproto.repo.strongRef") {
                 // Check for reports on records
-                await handlePostReport(event);
+                // await handlePostReport(event);
               }
             }
           }) ?? [],
