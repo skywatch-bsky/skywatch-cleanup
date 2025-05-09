@@ -59,11 +59,11 @@ async function main() {
             ) {
               // Check for reports on user accounts
               if (event.subject.$type === "com.atproto.admin.defs#repoRef") {
-                // await handleRepoReport(event);
+                await handleRepoReport(event);
                 await handleImportReport(event);
               } else if (event.subject.$type === "com.atproto.repo.strongRef") {
                 // Check for reports on records
-                // await handlePostReport(event);
+                await handlePostReport(event);
               }
             }
           }) ?? [],
