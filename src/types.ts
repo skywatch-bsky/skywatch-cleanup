@@ -38,11 +38,14 @@ export interface Checks {
   comment: string;
   description?: boolean;
   displayName?: boolean;
-  reportOnly: boolean;
-  commentOnly: boolean;
+  reportAcct: boolean;
+  commentAcct: boolean;
+  toLabel: boolean;
   check: RegExp;
   whitelist?: RegExp;
   ignoredDIDs?: string[];
+  starterPacks?: string[];
+  knownVectors?: string[];
 }
 
 export interface List {

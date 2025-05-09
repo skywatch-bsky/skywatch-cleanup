@@ -1,9 +1,13 @@
 import { agent, isLoggedIn } from "./agent.js";
 import { limit } from "./rateLimit.js";
-import { MOD_DID } from "./config.js";
+import { getModHeaders } from "./constants.js";
 import { logger } from "./logger.js";
 
-export const AckReportRepo = async (did: string, subjectType: string, cmt: string) => {
+export const AckReportRepo = async (
+  did: string,
+  subjectType: string,
+  cmt: string,
+) => {
   if (!did || !subjectType) {
     logger.error("Invalid parameters for AckReportRepo");
     return;
@@ -26,15 +30,7 @@ export const AckReportRepo = async (did: string, subjectType: string, cmt: strin
           createdBy: `${agent.did}`,
           createdAt: new Date().toISOString(),
         },
-        {
-          headers: {
-            encoding: "application/json",
-            role: "moderator",
-            "atproto-proxy": `${MOD_DID!}#atproto_labeler`,
-            "atproto-accept-labelers":
-              "did:plc:ar7c4by46qjdydhdevvrndac;redact",
-          },
-        },
+        { headers: getModHeaders() },
       );
     } catch (e) {
       logger.error(e);
@@ -70,15 +66,7 @@ export const AckReportPost = async (
           createdBy: `${agent.did}`,
           createdAt: new Date().toISOString(),
         },
-        {
-          headers: {
-            encoding: "application/json",
-            role: "moderator",
-            "atproto-proxy": `${MOD_DID!}#atproto_labeler`,
-            "atproto-accept-labelers":
-              "did:plc:ar7c4by46qjdydhdevvrndac;redact",
-          },
-        },
+        { headers: getModHeaders() },
       );
     } catch (e) {
       logger.error(e);

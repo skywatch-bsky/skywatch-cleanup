@@ -9,8 +9,11 @@ import {
   createAccountComment,
   createPostComment,
 } from "./moderation.js";
+import { checkDescription, checkDisplayName } from "./checkProfiles.js";
 import { processClavataEvaluation } from "./clavataPolicy.js";
 import { getPostContent } from "./getPosts.js";
+import { time } from "console";
+import exp from "constants";
 
 export async function handleRepoReport(
   event: ModEventView,
@@ -89,10 +92,12 @@ export async function handleRepoReport(
     }
 
     // Send to processClavataEvaluation
-    if (
-      event.createdBy !== "did:plc:dbnoyyuzwgps2zr7v2psvp6o" &&
-      profile?.description
-    ) {
+    if (profile?.displayName) {
+      const displayName = profile.displayName;
+      await checkDisplayName(user, Date.now(), displayName);
+    }
+
+    if (profile?.description) {
       const description = profile.description;
       logger.info(`Event ${id}: Sending report for ${user} to Clavata AI`);
       await processClavataEvaluation(
@@ -101,45 +106,54 @@ export async function handleRepoReport(
         id,
         createAccountComment,
       );
+
+      await checkDescription(user, Date.now(), description);
+
       return {
         success: true,
-        message: "Report sent to Clavata AI",
+        message: "Report sent to Clavata AI and rechecked.",
+      };
+    }
+  }
+  return { success: true, message: "Report processed" };
+}
+
+// Handle Wencil imports seperately
+export async function handleImportReport(
+  event: ModEventView,
+): Promise<ReportHandlingResult> {
+  const id = event.id;
+
+  const user = event.subject.did as string;
+  const eventType = event.subject.$type as string;
+
+  // Process Wencil Blocklist
+  if (event.createdBy === "did:plc:dbnoyyuzwgps2zr7v2psvp6o") {
+    const comment = event.event.comment as string;
+    if (comment.includes("post with spam url associated with bot")) {
+      logger.info(
+        `Event ${id}: Auto-acknowledging experimental event for ${user}`,
+      );
+      await AckReportRepo(user, eventType, "Experimental Event");
+      return {
+        success: true,
+        message: "Auto-acknowledging report.",
       };
     }
 
-    // Process Wencil Blocklist
-    if (
-      event.createdBy === "did:plc:dbnoyyuzwgps2zr7v2psvp6o" &&
-      event.event.hasOwnProperty("comment")
-    ) {
-      const comment = event.event.comment as string;
-      if (comment.includes("post with spam url associated with bot")) {
-        logger.info(
-          `Event ${id}: Auto-acknowledging experimental event for ${user}`,
-        );
-        await AckReportRepo(user, eventType, "Experimental Event");
-        return {
-          success: true,
-          message: "Report acknowledged",
-        };
-      }
-    }
-
-    if (event.createdBy === "did:plc:dbnoyyuzwgps2zr7v2psvp6o") {
-      logger.info(
-        `Event ${id}: Labeling report for ${user} due to inclusion on imported blocklist.`,
-      );
-      await createAccountLabel(
-        user,
-        "suspect-inauthentic",
-        "Imported from https://bsky.app/profile/did:plc:d7nr65djxrudtdg3tslzfiyr/lists/3lcm6ypfdj72r",
-      );
-      await AckReportRepo(
-        user,
-        "com.atproto.admin.defs#repoRef",
-        `Report is autolabeled.`,
-      );
-    }
+    logger.info(
+      `Event ${id}: Labeling report for ${user} due to inclusion on imported blocklist.`,
+    );
+    await createAccountLabel(
+      user,
+      "suspect-inauthentic",
+      "Imported from https://bsky.app/profile/did:plc:d7nr65djxrudtdg3tslzfiyr/lists/3lcm6ypfdj72r",
+    );
+    await AckReportRepo(
+      user,
+      "com.atproto.admin.defs#repoRef",
+      `Report is autolabeled.`,
+    );
     return {
       success: true,
       message: "Labeled suspected inauthentic.",
