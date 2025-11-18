@@ -60,7 +60,7 @@ export class PostsService {
 
       logger.info({ uri }, "Post hydrated successfully");
       return hydrated;
-    } catch (error) {
+    } catch (error: any) {
       const isNotFound =
         error?.error === "RecordNotFound" ||
         error?.message?.includes("RecordNotFound");
