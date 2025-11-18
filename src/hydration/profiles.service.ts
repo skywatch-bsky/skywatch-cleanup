@@ -1,0 +1,73 @@
+import { AtpAgent, AppBskyActorDefs } from "@atproto/api";
+import { logger } from "../logger.js";
+import { withRetry } from "../utils/retry.js";
+import { HydratedProfile } from "../types.js";
+
+export class ProfilesService {
+  private agent: AtpAgent;
+  private limit: (fn: () => Promise<any>) => Promise<any>;
+
+  constructor(
+    agent: AtpAgent,
+    limit: (fn: () => Promise<any>) => Promise<any>,
+  ) {
+    this.agent = agent;
+    this.limit = limit;
+  }
+
+  async hydrateProfile(did: string): Promise<HydratedProfile | null> {
+    try {
+      const profile = await this.limit(() =>
+        withRetry(
+          async () => {
+            const resp = await this.agent.app.bsky.actor.getProfile({
+              actor: did,
+            });
+
+            if (!resp.success || !resp.data) {
+              logger.warn({ did }, "Failed to fetch profile");
+              return null;
+            }
+
+            return resp.data;
+          },
+          { maxAttempts: 3 },
+        ),
+      );
+
+      if (!profile) {
+        return null;
+      }
+
+      const hydrated: HydratedProfile = {
+        did,
+        handle: profile.handle,
+        displayName: profile.displayName,
+        description: profile.description,
+        avatarUrl: profile.avatar,
+        bannerUrl: profile.banner,
+      };
+
+      logger.info({ did, handle: profile.handle }, "Profile hydrated successfully");
+      return hydrated;
+    } catch (error: any) {
+      const isSuspended =
+        error?.message === "Account has been suspended" ||
+        error?.error === "AccountTakedown" ||
+        error?.error === "AccountNotFound";
+
+      if (isSuspended) {
+        logger.warn({ did }, "Account is suspended or not found");
+        return null;
+      }
+
+      logger.error({ error, did }, "Failed to hydrate profile");
+      return null;
+    }
+  }
+
+  hasLabel(profile: HydratedProfile | AppBskyActorDefs.ProfileViewDetailed, labelValue: string): boolean {
+    const labels = (profile as any).labels || [];
+    return labels.some((label: any) => label.val === labelValue);
+  }
+}
