@@ -42,8 +42,8 @@ describe("ProfilesService", () => {
     expect(result?.handle).toBe("user.bsky.social");
     expect(result?.displayName).toBe("Test User");
     expect(result?.description).toBe("A test profile");
-    expect(result?.avatarUrl).toBe("https://example.com/avatar.jpg");
-    expect(result?.bannerUrl).toBe("https://example.com/banner.jpg");
+    expect(result?.avatar).toBe("https://example.com/avatar.jpg");
+    expect(result?.banner).toBe("https://example.com/banner.jpg");
   });
 
   it("returns null on suspended account", async () => {
@@ -102,8 +102,8 @@ describe("ProfilesService", () => {
 
     expect(result?.displayName).toBeUndefined();
     expect(result?.description).toBeUndefined();
-    expect(result?.avatarUrl).toBeUndefined();
-    expect(result?.bannerUrl).toBeUndefined();
+    expect(result?.avatar).toBeUndefined();
+    expect(result?.banner).toBeUndefined();
   });
 
   it("detects profile labels", async () => {

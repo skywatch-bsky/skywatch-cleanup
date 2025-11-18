@@ -13,25 +13,14 @@ export const getProfiles = async (
   try {
     await isLoggedIn;
 
-    const hydrated = await profilesService.hydrateProfile(did);
+    const profile = await profilesService.hydrateProfile(did);
 
-    if (!hydrated) {
+    if (!profile) {
       logger.info({ did }, "Profile not found");
       return undefined;
     }
 
-    // Reconstruct the AppBskyActorDefs.ProfileViewDetailed object
-    // by returning the result from the underlying API call
-    const resp = await agent.app.bsky.actor.getProfile({
-      actor: did,
-    });
-
-    if (resp.success) {
-      return resp.data;
-    } else {
-      logger.info({ did }, "Profile not found");
-      return undefined;
-    }
+    return profile;
   } catch (e) {
     const error = e as any;
     const isSuspended =

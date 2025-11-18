@@ -1,7 +1,6 @@
 import { AtpAgent, AppBskyActorDefs } from "@atproto/api";
 import { logger } from "../logger.js";
 import { withRetry } from "../utils/retry.js";
-import { HydratedProfile } from "../types.js";
 
 export class ProfilesService {
   private agent: AtpAgent;
@@ -15,7 +14,7 @@ export class ProfilesService {
     this.limit = limit;
   }
 
-  async hydrateProfile(did: string): Promise<HydratedProfile | null> {
+  async hydrateProfile(did: string): Promise<AppBskyActorDefs.ProfileViewDetailed | null> {
     try {
       const profile = await this.limit(() =>
         withRetry(
@@ -39,17 +38,8 @@ export class ProfilesService {
         return null;
       }
 
-      const hydrated: HydratedProfile = {
-        did,
-        handle: profile.handle,
-        displayName: profile.displayName,
-        description: profile.description,
-        avatarUrl: profile.avatar,
-        bannerUrl: profile.banner,
-      };
-
       logger.info({ did, handle: profile.handle }, "Profile hydrated successfully");
-      return hydrated;
+      return profile;
     } catch (error: any) {
       const isSuspended =
         error?.message === "Account has been suspended" ||
