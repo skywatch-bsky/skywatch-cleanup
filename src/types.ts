@@ -95,8 +95,8 @@ export interface PostRecord {
 export interface HydratedPost {
   uri: string;
   text: string;
-  facets?: PostRecord['facets'];
-  embeds?: PostRecord['embed'][];
+  facets?: PostRecord["facets"];
+  embeds?: PostRecord["embed"][];
   langs?: string[];
   tags?: string[];
   createdAt: string;

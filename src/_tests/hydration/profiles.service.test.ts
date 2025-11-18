@@ -110,10 +110,7 @@ describe("ProfilesService", () => {
     const profileWithLabels = {
       did: "did:plc:test123",
       handle: "user.bsky.social",
-      labels: [
-        { val: "spam" },
-        { val: "nsfw" },
-      ],
+      labels: [{ val: "spam" }, { val: "nsfw" }],
     };
 
     expect(service.hasLabel(profileWithLabels, "spam")).toBe(true);

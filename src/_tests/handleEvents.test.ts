@@ -31,7 +31,8 @@ describe("handleEvents policy parsing", () => {
 
   describe("reason extraction", () => {
     it("should extract reason from formatted response", () => {
-      const response = "1 - This post violates policy X because of discriminatory language";
+      const response =
+        "1 - This post violates policy X because of discriminatory language";
       const match = response.match(/^(\d+)\s*-\s*(.+)$/s);
       const reason = match ? match[2].trim() : response;
 

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start": "npx tsx src/main.ts",
+    "start": "bun src/main.ts",
     "dev": "npx tsx --watch src/main.ts",
     "list": "npx tsx --watch src/CheckLists.ts",
     "test": "bun test src/_tests",

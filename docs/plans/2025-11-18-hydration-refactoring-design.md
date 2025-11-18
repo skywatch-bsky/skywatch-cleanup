@@ -5,6 +5,7 @@
 Refactor skywatch-cleanup's post and profile hydration logic to adopt robust patterns from skywatch-tail while maintaining cleanup's straightforward main loop architecture. The goal is to eliminate code duplication, improve error resilience through built-in retry logic, and align with proven patterns across the skywatch ecosystem.
 
 **Success Criteria:**
+
 - Extract and reuse post/profile hydration code from skywatch-tail
 - Implement retry mechanism with exponential backoff for transient failures
 - Adopt skywatch-tail's rate-limiting strategy (5-minute intervals, 3000 req/5min)
@@ -43,6 +44,7 @@ The refactoring adopts a **Moderated Service Pattern** that extracts hydration c
    - Distinguishes retryable errors (429, 5xx, network) from permanent (404 "RecordNotFound")
 
 **Data Flow (unchanged):**
+
 ```
 main.ts loop
   ├→ getStatus() → handleRepoStatus()
@@ -61,6 +63,7 @@ main.ts loop
 ## Existing Patterns
 
 **From skywatch-tail adopted:**
+
 - Service class pattern for hydration (robust encapsulation)
 - `withRetry()` utility with configurable backoff (proven exponential backoff: 1s→2s→4s)
 - Retry predicates for error classification (rate limit, network, server)
@@ -69,6 +72,7 @@ main.ts loop
 - Structured logging via Pino (already used in cleanup)
 
 **From skywatch-cleanup preserved:**
+
 - Main loop polling architecture (no queue)
 - AtpAgent as central API client
 - Rate-limited wrapper pattern (already uses p-ratelimit)
@@ -76,6 +80,7 @@ main.ts loop
 - Direct moderation action emission (no async processing)
 
 **Divergence from skywatch-tail:**
+
 - No DuckDB persistence (cleanup fetches fresh each cycle)
 - No blob processing (cleanup doesn't handle embedded media)
 - No PDS resolution (cleanup uses hardcoded PDS endpoint)
@@ -85,9 +90,11 @@ main.ts loop
 ## Implementation Phases
 
 ### Phase 1: Create Retry Utility
+
 **Goal:** Establish the retry mechanism that services will use
 
 **Components:**
+
 - Create `src/utils/retry.ts` with `withRetry()` function
 - Define error predicates: `isRateLimitError()`, `isNetworkError()`, `isServerError()`, `isRecordNotFoundError()`
 - Extract from skywatch-tail, adapt for cleanup's context (remove blob-specific logic)
@@ -98,9 +105,11 @@ main.ts loop
 **Dependencies:** None (pure utility)
 
 ### Phase 2: Extend Rate Limiting Configuration
+
 **Goal:** Add per-service rate limiters while maintaining backwards compatibility
 
 **Components:**
+
 - Modify `src/rateLimit.ts` to add `postsServiceLimit` and `profilesServiceLimit`
 - Each configured: interval=300000ms, rate=3000, concurrency=48, maxDelay=60000ms
 - Keep existing global `limit` for backwards compatibility
@@ -110,9 +119,11 @@ main.ts loop
 **Dependencies:** None (uses existing p-ratelimit)
 
 ### Phase 3: Create PostsService
+
 **Goal:** Extract and encapsulate post hydration logic into a reusable service
 
 **Components:**
+
 - Create `src/hydration/posts.service.ts` as a class
 - Constructor: accepts `agent` (AtpAgent) and `limit` (pRateLimit instance)
 - Method: `hydratePost(uri: string): Promise<HydratedPost | null>`
@@ -124,15 +135,18 @@ main.ts loop
   - Return hydrated object or null on error
 
 **Testing:**
+
 - Unit tests: happy path, retry on 429/5xx, graceful 404 handling, field extraction
 - Mock agent with prepared responses
 
 **Dependencies:** `@atproto/api` (AtpAgent), `src/utils/retry.ts`
 
 ### Phase 4: Create ProfilesService
+
 **Goal:** Extract and encapsulate profile hydration logic into a reusable service
 
 **Components:**
+
 - Create `src/hydration/profiles.service.ts` as a class
 - Constructor: accepts `agent` (AtpAgent) and `limit` (pRateLimit instance)
 - Method: `hydrateProfile(did: string): Promise<HydratedProfile | null>`
@@ -145,15 +159,18 @@ main.ts loop
   - Return hydrated object or null on error
 
 **Testing:**
+
 - Unit tests: happy path, retry logic, graceful 404 handling, handle resolution
 - Mock agent with prepared responses
 
 **Dependencies:** `@atproto/api` (AtpAgent), `src/utils/retry.ts`
 
 ### Phase 5: Refactor getPosts() and getProfiles()
+
 **Goal:** Update existing entry points to use new services
 
 **Components:**
+
 - Modify `src/getPosts.ts`:
   - Instantiate `PostsService` with `agent` and `postsServiceLimit`
   - Update `getPosts(uris: string[])` to call `postService.hydratePost()` for each
@@ -165,15 +182,18 @@ main.ts loop
   - Preserve function signature (API unchanged for callers)
 
 **Testing:**
+
 - Existing tests in `src/_tests/getPosts.test.ts` should still pass
 - No changes needed to `handleEvents.test.ts` (API unchanged)
 
 **Dependencies:** `src/hydration/posts.service.ts`, `src/hydration/profiles.service.ts`, `src/rateLimit.ts`
 
 ### Phase 6: Add Service Integration Tests
+
 **Goal:** Verify services integrate correctly with rate limiting and error handling
 
 **Components:**
+
 - Create `src/_tests/hydration/integration.test.ts`
 - Test scenarios:
   - Services compose correctly with rate limiter
@@ -186,9 +206,11 @@ main.ts loop
 **Dependencies:** Services from phases 3-4, rate limiter from phase 2
 
 ### Phase 7: Add Unit Tests for Retry Utility
+
 **Goal:** Comprehensive coverage of retry logic
 
 **Components:**
+
 - Create `src/_tests/utils/retry.test.ts`
 - Test scenarios:
   - Exponential backoff timing (1s→2s→4s with 2x multiplier)
@@ -203,9 +225,11 @@ main.ts loop
 **Dependencies:** `src/utils/retry.ts`
 
 ### Phase 8: Update Documentation & Run Full Test Suite
+
 **Goal:** Verify all tests pass, document changes
 
 **Components:**
+
 - Update `README.md` with new architecture (services, retry, rate-limiting)
 - Run full test suite: `bun test`
 - Verify all existing tests still pass
@@ -242,11 +266,13 @@ The retry mechanism handles three categories of errors:
 ### Rate Limiting Rationale
 
 **5-minute interval** (vs cleanup's current 30-second):
+
 - Aligns with skywatch-tail's proven strategy
 - Provides more breathing room for bursts
 - 3000 req/5min = 10 req/sec (vs 9.33 req/sec currently)
 
 **60-second max delay** (vs cleanup's 0ms):
+
 - Allows moderate queueing for legitimate spikes
 - Prevents cascading timeouts under load
 - Strict policy: reject if delayed > 60s
@@ -254,12 +280,14 @@ The retry mechanism handles three categories of errors:
 ### Backwards Compatibility
 
 **No breaking changes:**
+
 - `getPosts()` and `getProfiles()` function signatures unchanged
 - Callers in `handleEvents.ts` require zero modifications
 - Main loop in `main.ts` unaffected
 - All existing tests continue to pass
 
 **Gradual adoption possible:**
+
 - New services can coexist with old implementation during transition
 - Can migrate module-by-module if preferred
 - Current design allows instant cutover (low risk)
@@ -267,6 +295,7 @@ The retry mechanism handles three categories of errors:
 ### Future Extensibility
 
 This design enables:
+
 - **Caching layer** - Services can add optional caching without affecting callers
 - **Metrics/tracing** - Service wrappers can emit telemetry
 - **Queue-based processing** - Services can be adapted to async event model

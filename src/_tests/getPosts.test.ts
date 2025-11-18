@@ -3,8 +3,7 @@ import { describe, it, expect } from "bun:test";
 describe("getPosts error handling", () => {
   describe("URI parsing", () => {
     it("should correctly parse valid AT URI", () => {
-      const uri =
-        "at://did:plc:example123/app.bsky.feed.post/3m5up3mphy22l";
+      const uri = "at://did:plc:example123/app.bsky.feed.post/3m5up3mphy22l";
       const parts = uri.split("/");
 
       expect(parts.length).toBeGreaterThanOrEqual(5);

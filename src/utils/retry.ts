@@ -8,29 +8,37 @@ export function isRecordNotFoundError(error: any): boolean {
 export function isRateLimitError(error: any): boolean {
   if (error?.status === 429) return true;
   if (error?.error === "RateLimitExceeded") return true;
-  const msg = error?.message || '';
-  return msg.includes('429') || msg.includes('rate limit') || msg.includes('rate limited');
+  const msg = error?.message || "";
+  return (
+    msg.includes("429") ||
+    msg.includes("rate limit") ||
+    msg.includes("rate limited")
+  );
 }
 
 export function isNetworkError(error: any): boolean {
-  const code = error?.code || error?.errno || '';
-  const msg = error?.message || '';
+  const code = error?.code || error?.errno || "";
+  const msg = error?.message || "";
 
   const networkErrorCodes = [
-    'ECONNRESET',
-    'ECONNREFUSED',
-    'ETIMEDOUT',
-    'ENOTFOUND',
-    'ENETUNREACH',
-    'EHOSTUNREACH',
-    'ERR_HTTP2_STREAM_CANCEL',
-    'ERR_TLS_CERT_HAS_EXPIRED',
-    'EPROTO'
+    "ECONNRESET",
+    "ECONNREFUSED",
+    "ETIMEDOUT",
+    "ENOTFOUND",
+    "ENETUNREACH",
+    "EHOSTUNREACH",
+    "ERR_HTTP2_STREAM_CANCEL",
+    "ERR_TLS_CERT_HAS_EXPIRED",
+    "EPROTO",
   ];
 
   if (networkErrorCodes.includes(code)) return true;
-  if (msg.includes('timeout') || msg.includes('socket hang up')) return true;
-  if (msg.includes('connect ECONNREFUSED') || msg.includes('getaddrinfo ENOTFOUND')) return true;
+  if (msg.includes("timeout") || msg.includes("socket hang up")) return true;
+  if (
+    msg.includes("connect ECONNREFUSED") ||
+    msg.includes("getaddrinfo ENOTFOUND")
+  )
+    return true;
 
   return false;
 }
@@ -58,7 +66,7 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
 
 export async function withRetry<T>(
   fn: () => Promise<T>,
-  config: Partial<RetryConfig> = {}
+  config: Partial<RetryConfig> = {},
 ): Promise<T> {
   const finalConfig = { ...DEFAULT_RETRY_CONFIG, ...config };
   let lastError: any;
@@ -69,18 +77,21 @@ export async function withRetry<T>(
     } catch (error) {
       lastError = error;
 
-      const isRetryable = finalConfig.retryableErrors?.some(predicate => predicate(error)) ?? true;
+      const isRetryable =
+        finalConfig.retryableErrors?.some((predicate) => predicate(error)) ??
+        true;
 
       if (!isRetryable || attempt === finalConfig.maxAttempts) {
         throw error;
       }
 
       const delayMs = Math.min(
-        finalConfig.initialDelay * Math.pow(finalConfig.backoffMultiplier, attempt - 1),
-        finalConfig.maxDelay
+        finalConfig.initialDelay *
+          Math.pow(finalConfig.backoffMultiplier, attempt - 1),
+        finalConfig.maxDelay,
       );
 
-      await new Promise(resolve => setTimeout(resolve, delayMs));
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
 

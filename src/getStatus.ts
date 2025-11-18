@@ -156,6 +156,7 @@ export const checkStatus = async (
           );
           await AckReportPost(
             status.subject.uri,
+            status.subject.cid,
             "com.atproto.repo.strongRef", // This is the $type
             "Handle invalid (auto-acknowledged).",
           );

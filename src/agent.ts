@@ -5,14 +5,14 @@ import { AtpAgent } from "@atproto/api";
 setGlobalDispatcher(new Agent({ connect: { timeout: 20_000 } }));
 
 export const agent = new AtpAgent({
-    service: `https://${OZONE_PDS}`,
+  service: `https://${OZONE_PDS}`,
 });
 export const login = () =>
-    agent.login({
-        identifier: BSKY_HANDLE,
-        password: BSKY_PASSWORD,
-    });
+  agent.login({
+    identifier: BSKY_HANDLE,
+    password: BSKY_PASSWORD,
+  });
 
 export const isLoggedIn = login()
-    .then(() => true)
-    .catch(() => false);
+  .then(() => true)
+  .catch(() => false);

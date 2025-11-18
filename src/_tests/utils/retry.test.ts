@@ -271,7 +271,8 @@ describe("Retry Utility", () => {
     it("respects custom retryableErrors predicates", async () => {
       let callCount = 0;
 
-      const isCustomRetryable = (error: any) => error?.code === "CUSTOM_TEMP_ERROR";
+      const isCustomRetryable = (error: any) =>
+        error?.code === "CUSTOM_TEMP_ERROR";
 
       const fn = async () => {
         callCount++;
@@ -345,7 +346,7 @@ describe("Retry Utility", () => {
       const result = await withRetry(fn, {
         maxAttempts: 3,
         initialDelay: 5000, // 5 seconds
-        maxDelay: 1000,     // 1 second
+        maxDelay: 1000, // 1 second
       });
 
       expect(result).toBe("success");

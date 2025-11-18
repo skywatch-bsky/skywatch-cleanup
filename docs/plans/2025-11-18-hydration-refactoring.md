@@ -19,6 +19,7 @@
 ### Task 1: Extend retry.ts with error detection predicates
 
 **Files:**
+
 - Modify: `src/utils/retry.ts` (add new error detection functions)
 - Test: `src/_tests/utils/retry.test.ts` (create new file)
 
@@ -34,29 +35,37 @@ Open `src/utils/retry.ts` and add these functions after the existing `isRecordNo
 export function isRateLimitError(error: any): boolean {
   if (error?.status === 429) return true;
   if (error?.error === "RateLimitExceeded") return true;
-  const msg = error?.message || '';
-  return msg.includes('429') || msg.includes('rate limit') || msg.includes('rate limited');
+  const msg = error?.message || "";
+  return (
+    msg.includes("429") ||
+    msg.includes("rate limit") ||
+    msg.includes("rate limited")
+  );
 }
 
 export function isNetworkError(error: any): boolean {
-  const code = error?.code || error?.errno || '';
-  const msg = error?.message || '';
+  const code = error?.code || error?.errno || "";
+  const msg = error?.message || "";
 
   const networkErrorCodes = [
-    'ECONNRESET',
-    'ECONNREFUSED',
-    'ETIMEDOUT',
-    'ENOTFOUND',
-    'ENETUNREACH',
-    'EHOSTUNREACH',
-    'ERR_HTTP2_STREAM_CANCEL',
-    'ERR_TLS_CERT_HAS_EXPIRED',
-    'EPROTO'
+    "ECONNRESET",
+    "ECONNREFUSED",
+    "ETIMEDOUT",
+    "ENOTFOUND",
+    "ENETUNREACH",
+    "EHOSTUNREACH",
+    "ERR_HTTP2_STREAM_CANCEL",
+    "ERR_TLS_CERT_HAS_EXPIRED",
+    "EPROTO",
   ];
 
   if (networkErrorCodes.includes(code)) return true;
-  if (msg.includes('timeout') || msg.includes('socket hang up')) return true;
-  if (msg.includes('connect ECONNREFUSED') || msg.includes('getaddrinfo ENOTFOUND')) return true;
+  if (msg.includes("timeout") || msg.includes("socket hang up")) return true;
+  if (
+    msg.includes("connect ECONNREFUSED") ||
+    msg.includes("getaddrinfo ENOTFOUND")
+  )
+    return true;
 
   return false;
 }
@@ -84,7 +93,7 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
 
 export async function withRetry<T>(
   fn: () => Promise<T>,
-  config: Partial<RetryConfig> = {}
+  config: Partial<RetryConfig> = {},
 ): Promise<T> {
   const finalConfig = { ...DEFAULT_RETRY_CONFIG, ...config };
   let lastError: any;
@@ -96,7 +105,9 @@ export async function withRetry<T>(
       lastError = error;
 
       // Check if error is retryable
-      const isRetryable = finalConfig.retryableErrors?.some(predicate => predicate(error)) ?? true;
+      const isRetryable =
+        finalConfig.retryableErrors?.some((predicate) => predicate(error)) ??
+        true;
 
       if (!isRetryable || attempt === finalConfig.maxAttempts) {
         throw error;
@@ -104,12 +115,13 @@ export async function withRetry<T>(
 
       // Calculate backoff delay
       const delayMs = Math.min(
-        finalConfig.initialDelay * Math.pow(finalConfig.backoffMultiplier, attempt - 1),
-        finalConfig.maxDelay
+        finalConfig.initialDelay *
+          Math.pow(finalConfig.backoffMultiplier, attempt - 1),
+        finalConfig.maxDelay,
       );
 
       // Wait before retrying
-      await new Promise(resolve => setTimeout(resolve, delayMs));
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
 
@@ -395,7 +407,8 @@ describe("Retry Utility", () => {
     it("respects custom retryableErrors predicates", async () => {
       let callCount = 0;
 
-      const isCustomRetryable = (error: any) => error?.code === "CUSTOM_TEMP_ERROR";
+      const isCustomRetryable = (error: any) =>
+        error?.code === "CUSTOM_TEMP_ERROR";
 
       const fn = async () => {
         callCount++;
@@ -469,7 +482,7 @@ describe("Retry Utility", () => {
       const result = await withRetry(fn, {
         maxAttempts: 3,
         initialDelay: 5000, // 5 seconds
-        maxDelay: 1000,     // 1 second
+        maxDelay: 1000, // 1 second
       });
 
       expect(result).toBe("success");
@@ -561,6 +574,7 @@ describe("Retry Utility", () => {
 Run: `bun test src/_tests/utils/retry.test.ts`
 
 Expected output:
+
 ```
  20+ pass
  0 fail
@@ -580,6 +594,7 @@ git commit -m "feat(retry): add error detection and withRetry utility with expon
 ### Task 1: Add per-service rate limiters to rateLimit.ts
 
 **Files:**
+
 - Modify: `src/rateLimit.ts`
 
 **Step 1: Read current rateLimit.ts**
@@ -649,6 +664,7 @@ git commit -m "feat(rate-limit): add per-service rate limiters for posts and pro
 ### Task 1: Create hydration directory and types
 
 **Files:**
+
 - Create: `src/hydration/` (directory)
 - Modify: `src/types.ts`
 
@@ -692,8 +708,8 @@ export interface PostRecord {
 export interface HydratedPost {
   uri: string;
   text: string;
-  facets?: PostRecord['facets'];
-  embeds?: PostRecord['embed'][];
+  facets?: PostRecord["facets"];
+  embeds?: PostRecord["embed"][];
   langs?: string[];
   tags?: string[];
   createdAt: string;
@@ -717,6 +733,7 @@ git commit -m "feat(types): add Post and HydratedPost type definitions"
 ### Task 2: Create PostsService class
 
 **Files:**
+
 - Create: `src/hydration/posts.service.ts`
 - Create: `src/_tests/hydration/posts.service.test.ts`
 
@@ -936,6 +953,7 @@ Run: `mkdir -p src/_tests/hydration`
 Run: `bun test src/_tests/hydration/posts.service.test.ts`
 
 Expected output:
+
 ```
  6 pass
  0 fail
@@ -961,6 +979,7 @@ git commit -m "feat(hydration): add PostsService with comprehensive post hydrati
 ### Task 1: Add HydratedProfile type to types.ts
 
 **Files:**
+
 - Modify: `src/types.ts`
 
 **Step 1: Add HydratedProfile interface to src/types.ts**
@@ -994,6 +1013,7 @@ git commit -m "feat(types): add HydratedProfile type definition"
 ### Task 2: Create ProfilesService class
 
 **Files:**
+
 - Create: `src/hydration/profiles.service.ts`
 - Create: `src/_tests/hydration/profiles.service.test.ts`
 
@@ -1052,7 +1072,10 @@ export class ProfilesService {
         bannerUrl: profile.banner,
       };
 
-      logger.info({ did, handle: profile.handle }, "Profile hydrated successfully");
+      logger.info(
+        { did, handle: profile.handle },
+        "Profile hydrated successfully",
+      );
       return hydrated;
     } catch (error) {
       const isSuspended =
@@ -1070,7 +1093,10 @@ export class ProfilesService {
     }
   }
 
-  hasLabel(profile: HydratedProfile | AppBskyActorDefs.ProfileViewDetailed, labelValue: string): boolean {
+  hasLabel(
+    profile: HydratedProfile | AppBskyActorDefs.ProfileViewDetailed,
+    labelValue: string,
+  ): boolean {
     const labels = (profile as any).labels || [];
     return labels.some((label: any) => label.val === labelValue);
   }
@@ -1194,10 +1220,7 @@ describe("ProfilesService", () => {
     const profileWithLabels = {
       did: "did:plc:test123",
       handle: "user.bsky.social",
-      labels: [
-        { val: "spam" },
-        { val: "nsfw" },
-      ],
+      labels: [{ val: "spam" }, { val: "nsfw" }],
     };
 
     expect(service.hasLabel(profileWithLabels, "spam")).toBe(true);
@@ -1212,6 +1235,7 @@ describe("ProfilesService", () => {
 Run: `bun test src/_tests/hydration/profiles.service.test.ts`
 
 Expected output:
+
 ```
  8 pass
  0 fail
@@ -1237,6 +1261,7 @@ git commit -m "feat(hydration): add ProfilesService with profile hydration and l
 ### Task 1: Refactor getPosts.ts to use PostsService
 
 **Files:**
+
 - Modify: `src/getPosts.ts`
 
 **Step 1: Read current getPosts.ts**
@@ -1296,6 +1321,7 @@ git commit -m "refactor(getPosts): use PostsService for hydration"
 ### Task 2: Refactor getProfiles.ts to use ProfilesService
 
 **Files:**
+
 - Modify: `src/getProfiles.ts`
 
 **Step 1: Read current getProfiles.ts**
@@ -1391,11 +1417,13 @@ git commit -m "refactor(getProfiles): use ProfilesService for hydration"
 ### Task 1: Create service integration tests
 
 **Files:**
+
 - Create: `src/_tests/hydration/integration.test.ts`
 
 **Step 1: Create integration test file**
 
 Create `src/_tests/hydration/integration.test.ts` with comprehensive tests covering:
+
 - Rate limiter composition with retry
 - Multiple concurrent service calls
 - Error handling & logging
@@ -1408,6 +1436,7 @@ Create `src/_tests/hydration/integration.test.ts` with comprehensive tests cover
 Run: `bun test src/_tests/hydration/integration.test.ts`
 
 Expected output:
+
 ```
  9 pass
  0 fail
@@ -1433,11 +1462,13 @@ git commit -m "test(hydration): add integration tests for services with rate lim
 ### Task 1: Extend retry utility tests with edge cases
 
 **Files:**
+
 - Modify: `src/_tests/utils/retry.test.ts` (add edge case tests)
 
 **Step 1: Append edge case tests to existing retry.test.ts**
 
 After the existing tests in `src/_tests/utils/retry.test.ts`, add comprehensive edge case tests including:
+
 - maxAttempts edge cases (0, 1, very large)
 - Missing/undefined error objects
 - Custom retry predicates
@@ -1451,6 +1482,7 @@ After the existing tests in `src/_tests/utils/retry.test.ts`, add comprehensive 
 Run: `bun test src/_tests/utils/retry.test.ts`
 
 Expected output:
+
 ```
  20+ pass
  0 fail
@@ -1476,11 +1508,13 @@ git commit -m "test(retry): add comprehensive edge case tests for retry utility"
 ### Task 1: Update README.md with refactoring changes
 
 **Files:**
+
 - Modify: `README.md`
 
 **Step 1: Replace README.md**
 
 Replace entire contents of `README.md` with updated documentation covering:
+
 - Project overview and architecture
 - Component descriptions
 - Configuration requirements
@@ -1505,6 +1539,7 @@ git commit -m "docs: update README with refactoring changes and architecture ove
 ### Task 2: Run full test suite and verify all pass
 
 **Files:**
+
 - No files modified; verification only
 
 **Step 1: Run complete test suite**
@@ -1512,6 +1547,7 @@ git commit -m "docs: update README with refactoring changes and architecture ove
 Run: `bun test`
 
 Expected output:
+
 ```
  65+ pass
  0 fail

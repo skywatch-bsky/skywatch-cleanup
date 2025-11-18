@@ -94,7 +94,7 @@ export async function createJob(text: string): Promise<Job> {
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(
-      `Clavata API error: ${response.status} ${response.statusText} - ${errorText}`
+      `Clavata API error: ${response.status} ${response.statusText} - ${errorText}`,
     );
   }
 
@@ -143,19 +143,19 @@ export async function processClavataEvaluation(
   text: string,
   identifier: string,
   eventId: number,
-  commentFn: (id: string, comment: string) => Promise<void>
+  commentFn: (id: string, comment: string) => Promise<void>,
 ): Promise<void> {
   try {
     const labels = await evaluateClavataPolicy(text);
     if (labels.length > 0) {
       logger.info(
-        `Event ${eventId}: Clavata policy matched for ${identifier}: ${labels.join(", ")}`
+        `Event ${eventId}: Clavata policy matched for ${identifier}: ${labels.join(", ")}`,
       );
       // Create an annotation for each matched label.
       if (labels.length > 0) {
         const commentMessage = `Clavata evaluation identified the following labels: ${labels.join(", ")}`;
         logger.info(
-          `Event ${eventId}: Commenting on ${identifier} with: ${commentMessage}`
+          `Event ${eventId}: Commenting on ${identifier} with: ${commentMessage}`,
         );
         await commentFn(identifier, commentMessage);
       } else {
@@ -164,7 +164,7 @@ export async function processClavataEvaluation(
     }
   } catch (error) {
     logger.error(
-      `Error during Clavata evaluation for ${identifier} in event ${eventId}: ${error}`
+      `Error during Clavata evaluation for ${identifier} in event ${eventId}: ${error}`,
     );
   }
 }

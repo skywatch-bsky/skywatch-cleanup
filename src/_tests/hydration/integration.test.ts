@@ -76,11 +76,11 @@ describe("Hydration Integration Tests", () => {
       ];
 
       const results = await Promise.all(
-        uris.map(uri => service.hydratePost(uri))
+        uris.map((uri) => service.hydratePost(uri)),
       );
 
       expect(results).toHaveLength(3);
-      expect(results.every(r => r !== null)).toBe(true);
+      expect(results.every((r) => r !== null)).toBe(true);
       expect(mockLimit).toHaveBeenCalledTimes(3);
     });
   });
@@ -150,18 +150,14 @@ describe("Hydration Integration Tests", () => {
     });
 
     it("handles multiple concurrent requests", async () => {
-      const dids = [
-        "did:plc:user1",
-        "did:plc:user2",
-        "did:plc:user3",
-      ];
+      const dids = ["did:plc:user1", "did:plc:user2", "did:plc:user3"];
 
       const results = await Promise.all(
-        dids.map(did => service.hydrateProfile(did))
+        dids.map((did) => service.hydrateProfile(did)),
       );
 
       expect(results).toHaveLength(3);
-      expect(results.every(r => r !== null)).toBe(true);
+      expect(results.every((r) => r !== null)).toBe(true);
       expect(mockLimit).toHaveBeenCalledTimes(3);
     });
   });
@@ -234,7 +230,9 @@ describe("Hydration Integration Tests", () => {
       const mockLimit = mock(async (fn: () => Promise<any>) => fn());
       const service = new PostsService(mockAgent, mockLimit);
 
-      const result = await service.hydratePost("at://did123/app.bsky.feed.post/abc123");
+      const result = await service.hydratePost(
+        "at://did123/app.bsky.feed.post/abc123",
+      );
 
       expect(result).toBeNull();
       expect(mockLimit).toHaveBeenCalledTimes(1);

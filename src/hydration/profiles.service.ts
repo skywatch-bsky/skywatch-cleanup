@@ -14,7 +14,9 @@ export class ProfilesService {
     this.limit = limit;
   }
 
-  async hydrateProfile(did: string): Promise<AppBskyActorDefs.ProfileViewDetailed | null> {
+  async hydrateProfile(
+    did: string,
+  ): Promise<AppBskyActorDefs.ProfileViewDetailed | null> {
     try {
       const profile = await this.limit(() =>
         withRetry(
@@ -38,7 +40,10 @@ export class ProfilesService {
         return null;
       }
 
-      logger.info({ did, handle: profile.handle }, "Profile hydrated successfully");
+      logger.info(
+        { did, handle: profile.handle },
+        "Profile hydrated successfully",
+      );
       return profile;
     } catch (error: any) {
       const isSuspended =
@@ -56,7 +61,10 @@ export class ProfilesService {
     }
   }
 
-  hasLabel(profile: AppBskyActorDefs.ProfileViewDetailed, labelValue: string): boolean {
+  hasLabel(
+    profile: AppBskyActorDefs.ProfileViewDetailed,
+    labelValue: string,
+  ): boolean {
     if (!profile?.labels || !Array.isArray(profile.labels)) {
       return false;
     }

@@ -21,7 +21,7 @@ interface ChatCompletionResponse {
 }
 
 export const openai = new OpenAI({
-  baseURL: `http://${OLLAMA_BASE_URL}/v1/`,
+  baseURL: `http://${OLLAMA_BASE_URL}/v1`,
   apiKey: "ollama",
 });
 

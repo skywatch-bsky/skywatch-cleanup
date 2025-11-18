@@ -5,6 +5,7 @@ Automated moderation service for Bluesky that processes moderation reports and q
 ## Overview
 
 skywatch-cleanup is a continuous moderation service that:
+
 - Polls the Ozone moderation queue for pending reports
 - Hydrates post and profile content from Bluesky
 - Applies automated moderation actions based on configurable rules
@@ -189,6 +190,7 @@ const service = new ProfilesService(mockAgent, mockLimit);
 **Symptom**: Seeing 429 errors in logs
 
 **Solution**: The retry mechanism handles this automatically. If persistent:
+
 - Check `postsServiceLimit` and `profilesServiceLimit` configuration
 - Verify `maxDelay` allows sufficient queueing (default: 60s)
 - Reduce concurrency if hitting global platform limits
@@ -198,6 +200,7 @@ const service = new ProfilesService(mockAgent, mockLimit);
 **Symptom**: ECONNRESET, ETIMEDOUT errors
 
 **Solution**: Automatic retry with exponential backoff handles transient issues. If persistent:
+
 - Check network connectivity to Bluesky API
 - Verify DNS resolution
 - Review proxy/firewall rules
@@ -207,6 +210,7 @@ const service = new ProfilesService(mockAgent, mockLimit);
 **Symptom**: Posts or profiles returning null
 
 **Possible causes**:
+
 - Content deleted (logged as WARN "RecordNotFound")
 - Account suspended (logged as WARN "AccountTakedown")
 - API failures after retry exhaustion (logged as ERROR)
@@ -218,11 +222,13 @@ Check logs for specific error messages to diagnose.
 **Symptom**: Type errors during development
 
 **Solution**:
+
 ```bash
 npx tsc --noEmit
 ```
 
 Review error output. Common issues:
+
 - Missing imports from `@atproto/api`
 - Type mismatches in service responses
 - Incorrect optional chaining on hydrated objects

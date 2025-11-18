@@ -8,7 +8,7 @@ import {
 } from "./constants.js";
 import { ReportHandlingResult } from "./types.js";
 import { ModEventView } from "@atproto/api/dist/client/types/tools/ozone/moderation/defs.js";
-import { createPostLabel, createAccountReport } from "./events/moderation.js";
+import { createPostLabel, createAccountLabel } from "./events/moderation.js";
 import { getPostContent } from "./getPosts.js";
 import { loadPolicy } from "./loader.js";
 import { createChatCompletion } from "./ollama.js";
@@ -32,6 +32,13 @@ async function evaluateContentPolicy(
 
     return response.choices[0].message;
   } catch (error) {
+    logger.warn(
+      {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      },
+      "Error evaluating content policy",
+    );
     // Silently return null - these are often expected errors (suspended accounts, Ollama timeouts)
     return null;
   }
@@ -125,6 +132,26 @@ export async function handleRepoReport(
       );
       return { success: true, message: "Report acknowledged." };
     }
+
+    if (profile?.description) {
+      const description = profile.description;
+      for (const checkPolicy of POLICIES) {
+        const policy = loadPolicy(checkPolicy);
+        const result = await evaluateContentPolicy(policy.label, description);
+        logger.info(`Event ${id}: Evaluated against ${policy.label}`);
+
+        if (result) {
+          logger.info(result);
+          if (result.flag === 1) {
+            void createAccountLabel(
+              user,
+              `${policy.label}`,
+              `${result.reason}`,
+            );
+          }
+        }
+      }
+    }
   }
   return { success: true, message: "Report processed" };
 }
@@ -201,23 +228,21 @@ export async function handlePostReport(
     if (post) {
       for (const checkPolicy of POLICIES) {
         const policy = loadPolicy(checkPolicy);
-        const result = await evaluateContentPolicy(checkPolicy, post);
+        const result = await evaluateContentPolicy(policy.label, post);
 
         if (result) {
           logger.info(result);
           if (result.flag === 1) {
-            void createPostLabel(uri, cid, `${checkPolicy}`, result.reason);
-          } else if (result.flag === 0) {
-            void AckReportPost(
+            void createPostLabel(
               uri,
               cid,
-              "com.atproto.repo.strongRef",
-              `${checkPolicy}`,
+              `${policy.label}`,
+              `${result.reason}`,
             );
           }
         }
       }
     }
-    return { success: true, message: "Post processed" };
   }
+  return { success: true, message: "Post processed" };
 }
