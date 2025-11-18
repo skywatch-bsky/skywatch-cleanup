@@ -66,8 +66,10 @@ export class ProfilesService {
     }
   }
 
-  hasLabel(profile: HydratedProfile | AppBskyActorDefs.ProfileViewDetailed, labelValue: string): boolean {
-    const labels = (profile as any).labels || [];
-    return labels.some((label: any) => label.val === labelValue);
+  hasLabel(profile: AppBskyActorDefs.ProfileViewDetailed, labelValue: string): boolean {
+    if (!profile?.labels || !Array.isArray(profile.labels)) {
+      return false;
+    }
+    return profile.labels.some((label: any) => label.val === labelValue);
   }
 }
