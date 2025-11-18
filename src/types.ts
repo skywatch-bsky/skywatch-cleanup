@@ -102,3 +102,12 @@ export interface HydratedPost {
   createdAt: string;
   isReply: boolean;
 }
+
+export interface HydratedProfile {
+  did: string;
+  handle: string;
+  displayName?: string;
+  description?: string;
+  avatarUrl?: string;
+  bannerUrl?: string;
+}
