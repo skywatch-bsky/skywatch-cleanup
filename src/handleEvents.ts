@@ -8,7 +8,11 @@ import {
 } from "./constants.js";
 import { ReportHandlingResult } from "./types.js";
 import { ModEventView } from "@atproto/api/dist/client/types/tools/ozone/moderation/defs.js";
-import { createPostLabel, createAccountLabel } from "./events/moderation.js";
+import {
+  createPostLabel,
+  createAccountLabel,
+  createAccountReport,
+} from "./events/moderation.js";
 import { getPostContent } from "./getPosts.js";
 import { loadPolicy } from "./loader.js";
 import { createChatCompletion } from "./ollama.js";
@@ -238,6 +242,10 @@ export async function handlePostReport(
               cid,
               `${policy.label}`,
               `${result.reason}`,
+            );
+            void createAccountReport(
+              user,
+              `Post at ${uri} classified as ${policy.label} for ${result.reason}`,
             );
           }
         }
