@@ -2,7 +2,7 @@ label: maga-trump
 tolabel: true
 policy: |
   # MAGA Policy
-  GOAL: Identify posts that promote MAGA ideology, including campaign promotion, activism, and antagonistic pro-Trump messaging. Classify each EXAMPLE as 1 (MAGA) or 0 (not MAGA) using this policy.
+  GOAL: Identify posts that promote MAGA ideology, including campaign promotion, activism, and antagonistic pro-Trump messaging. Classify each input as 1 (MAGA) or 0 (not MAGA) using this policy.
 
   ## DEFINITION
 
@@ -40,11 +40,15 @@ policy: |
 
   ## EXAMPLES
 
-  Content: "Trump is YOUR president cry harder 🇺🇸"
+  Content: Trump is YOUR president cry harder 🇺🇸
   Answer (0 or 1 - {reason}): 1 - Post is overtly pro-trump and antagonistic.
-  Content: "Can't wait for Trump to clean house. MAGA!"
+  Content: Can't wait for Trump to clean house. MAGA!
   Answer (0 or 1 - {reason}):1 - Post is overtly pro-trump and antagonistic.
-  Content: "John Adams 60s drafted Army Inf Sgt Vet. Fine Art photographer. California. Music: jazz, blues, rock, classical. Photography degree. Peace in Ukraine. MAGA, Crypto, hookers will be blocked."
+  Content: John Adams 60s drafted Army Inf Sgt Vet. Fine Art photographer. California. Music: jazz, blues, rock, classical. Photography degree. Peace in Ukraine. MAGA, Crypto, hookers will be blocked.
   Answer (0 or 1 - {reason}): 0 - Profile is overtly anti-trump.
-  Content: "Exactly—selective outrage is the Left’s favorite currency. If Trump sneezes, it’s WWIII. But when their allies cozy up to regimes executing gays? Crickets. Morality only matters when it’s politically useful. #DoubleStandard #WokeHypocrisy #MAGA"
+  Content: Exactly—selective outrage is the Left’s favorite currency. If Trump sneezes, it’s WWIII. But when their allies cozy up to regimes executing gays? Crickets. Morality only matters when it’s politically useful. #DoubleStandard #WokeHypocrisy #MAGA
   Answer (0 or 1 - {reason}): 1 - Post is overtly pro-trump and antagonistic.
+  Content: Let’s give a big double barrel middle finger to the putrid swamp! “Cutesy time is over” - Dan Bongino 🇺🇸 #IFBAP 🇺🇸 #AmericaFirst 🇺🇸 #MAGA 🇺🇸 #TrumpTrain
+  Answer (0 or 1 - {reason}): 1 - Post is overtly pro-trump, with pro-MAGA hashtags
+  Content: #WWG1WGA #QAnon #MAGA #KAG #IFBAP 🇺🇸 Steadfast and loyal 🍀
+  Answer (0 or 1 - {reason}): 1 - Post is overtly pro-trump, with pro-MAGA hashtags

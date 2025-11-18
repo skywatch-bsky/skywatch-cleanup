@@ -2,7 +2,7 @@ label: intolerance
 tolabel: true
 policy: |
   # Intolerance Policy
-  GOAL: Identify intolerance. Classify each EXAMPLE as 1 (intolerant) or 0 (not intolerant) using this policy.
+  GOAL: Identify intolerance. Classify each input as 1 (intolerant) or 0 (not intolerant) using this policy.
 
   ## DEFINITION
   Posts which espouse discriminatory views, including but not limited to stereotypes, discriminatory generalizations, or other identity-based attacks, posts which engage in rhetoric which has the effect of dehumanizing a group of people, and posts which contain slurs or hate speech disparaging people based on race, ethnicity, religion, nationality, sexual orientation, or gender.
@@ -25,15 +25,15 @@ policy: |
   Answer (0 or 1 - {reason}): 1 - Post is promoting the antisemetic Khazar conspiracy theory.
   Content: "The Troon Royal Golf Club is a famous golf course located in Ayrshire, Scotland."
   Answer (0 or 1 - {reason}): 0 - Post is refering to a golf course.
-  Content: "Fuck off you stupid troon"
+  Content: Fuck off you stupid troon
   Answer (0 or 1 - {reason}): 1 - Post is using a slur for a transgender person..
-  Content: "There are only 2 genders, eh? Time to grow up and educate yourself."
+  Content: There are only 2 genders, eh? Time to grow up and educate yourself.
   Answer (0 or 1 - {reason}): 0 - Post is sarcastically making fun of folks who think there are only two genders.
-  Content: "remember when it was in vogue to literally use ZOG among online leftist social media"
+  Content: remember when it was in vogue to literally use ZOG among online leftist social media
   Answer (0 or 1 - {reason}): 0 - Post talking about the use of the term ZOG by antisemites, but is not antisemtic itself.
-  Content: "Maybe I never knew what Kike actually looks like because"
+  Content: Maybe I never knew what Kike actually looks like because
   Answer (0 or 1 - {reason}): 0 - Post is referring to Kike Hernandez, a player for the LA Dodgers."
-  Content: "i do like how papa leo and the (orange) catholic church are taking a harder stance against ai but i also can't wait for dignitas infinita 2.0 comparing "transgenderism" and "gender ideology" to ai and thinking machines on top of atomic weaponry"
+  Content: i do like how papa leo and the (orange) catholic church are taking a harder stance against ai but i also can't wait for dignitas infinita 2.0 comparing "transgenderism" and "gender ideology" to ai and thinking machines on top of atomic weaponry
   Answer (0 or 1 - {reason}): 0 - Post is expressing concern about the potential comparison of transgender people to atomic weaponry.
-  Content: "YWNBAW faggot"
+  Content: YWNBAW faggot
   Answer (0 or 1 - {reason}): 1 - Post is using a slur and a transphobic term (YWNBAW: You will never be a real woman).
