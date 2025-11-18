@@ -10,7 +10,9 @@ import { ReportHandlingResult } from "./types.js";
 import { ModEventView } from "@atproto/api/dist/client/types/tools/ozone/moderation/defs.js";
 import {
   createPostLabel,
+  createPostComment,
   createAccountLabel,
+  createAccountComment,
   createAccountReport,
 } from "./events/moderation.js";
 import { getPostContent } from "./getPosts.js";
@@ -152,6 +154,12 @@ export async function handleRepoReport(
               `${policy.label}`,
               `${result.reason}`,
             );
+          } else if (result.flag === 0) {
+            void createAccountComment(
+              user,
+              `${user} profile reviewed by gpt-oss-safeguard and not classified as ${policy.label} for ${result.reason}`,
+              `at://${user}`,
+            );
           }
         }
       }
@@ -246,6 +254,12 @@ export async function handlePostReport(
             void createAccountReport(
               user,
               `Post at ${uri} classified as ${policy.label} for ${result.reason}`,
+            );
+          } else if (result.flag === 0) {
+            void createPostComment(
+              uri,
+              cid,
+              `Post at ${uri} reviewed by gpt-oss-safeguard and not classified as ${policy.label} for ${result.reason}`,
             );
           }
         }
