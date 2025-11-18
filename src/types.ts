@@ -63,3 +63,42 @@ export interface CheckList {
   did: string;
   rkey: string;
 }
+
+export interface PostRecord {
+  text: string;
+  facets?: Array<{
+    index: {
+      byteStart: number;
+      byteEnd: number;
+    };
+    features: any[];
+  }>;
+  embed?: {
+    $type: string;
+    [key: string]: any;
+  };
+  langs?: string[];
+  tags?: string[];
+  createdAt: string;
+  reply?: {
+    root: {
+      uri: string;
+      cid: string;
+    };
+    parent: {
+      uri: string;
+      cid: string;
+    };
+  };
+}
+
+export interface HydratedPost {
+  uri: string;
+  text: string;
+  facets?: PostRecord['facets'];
+  embeds?: PostRecord['embed'][];
+  langs?: string[];
+  tags?: string[];
+  createdAt: string;
+  isReply: boolean;
+}
