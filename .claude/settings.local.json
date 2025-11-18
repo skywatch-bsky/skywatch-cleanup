@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_ed3d-fetch_fetch__fetch",
+      "Skill(ed3d-superpowers:systematic-debugging)",
+      "Bash(bun -e:*)",
+      "Bash(curl:*)",
+      "Bash(env)",
+      "Bash(ping:*)",
+      "Bash(timeout 10 bun run:*)",
+      "Bash(timeout 20 bun run:*)",
+      "Bash(timeout 15 bun run:*)",
+      "Bash(bun test:*)",
+      "Bash(bun build:*)",
+      "Bash(/dev/null)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

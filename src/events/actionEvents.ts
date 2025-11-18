@@ -1,13 +1,10 @@
-import { agent, isLoggedIn } from "./agent.js";
-import { limit } from "./rateLimit.js";
-import { MOD_DID } from "./config.js";
-import { logger } from "./logger.js";
-import {
-  ModEventView,
-  ModEventLabel,
-} from "@atproto/api/dist/client/types/tools/ozone/moderation/defs.js";
+import { agent, isLoggedIn } from "../agent.js";
+import { limit } from "../rateLimit.js";
+import { MOD_DID } from "../config.js";
+import { logger } from "../logger.js";
+import { ModEventView } from "@atproto/api/dist/client/types/tools/ozone/moderation/defs.js";
 import { RepoRef } from "@atproto/api/dist/client/types/com/atproto/admin/defs.js";
-import { POST_CHECKS, getModHeaders } from "./constants.js";
+import { getModHeaders } from "../constants.js";
 
 export const ActionReportRepo = async (
   did: string,
@@ -107,25 +104,4 @@ export const CheckReportRepo = async (event: ModEventView) => {
   logger.info(
     `CheckReportRepo: Processing event for user ${userDid} regarding comment: "${eventComment}"`,
   );
-
-  // Iterate through POST_CHECKS to find matching patterns
-  for (const postCheck of POST_CHECKS) {
-    if (postCheck.check.test(eventComment)) {
-      // Found a matching pattern
-      if (postCheck.whitelist && postCheck.whitelist.test(eventComment)) {
-        logger.info(
-          `CheckReportRepo: Whitelisted phrase found for label "${postCheck.label}" in comment: "${eventComment}". No action taken for this rule.`,
-        );
-        // Continue to the next postCheck rule
-        continue;
-      } else {
-        // Pattern matched and not whitelisted (or no whitelist defined)
-        logger.info(
-          `CheckReportRepo: Pattern for label "${postCheck.label}" matched in comment: "${eventComment}". Applying moderation action.`,
-        );
-        ActionReportRepo(userDid, postCheck.label, postCheck.comment);
-        // Assuming we process all matching rules; if only the first match should trigger, add 'break;' here.
-      }
-    }
-  }
 };

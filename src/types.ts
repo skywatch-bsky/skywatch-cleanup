@@ -1,6 +1,12 @@
 import { SubjectStatusView } from "@atproto/api/dist/client/types/tools/ozone/moderation/defs.js";
 import { lexXrpcError } from "@atproto/lexicon";
 
+export interface PolicyConfig {
+  label: string;
+  tolabel: boolean;
+  policy: string;
+}
+
 export interface userReport {
   did: SubjectStatusView["did"];
   displayName?: string;

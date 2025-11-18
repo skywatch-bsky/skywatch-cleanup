@@ -1,0 +1,48 @@
+label: maga-trump
+tolabel: true
+policy: |
+  # MAGA Policy
+  GOAL: Identify posts that promote MAGA ideology, including campaign promotion, activism, and antagonistic pro-Trump messaging. Classify each EXAMPLE as 1 (MAGA) or 0 (not MAGA) using this policy.
+
+  ## DEFINITION
+
+  Content that advocates for the MAGA movement, Trump campaigns (2024+), coordinates MAGA activism, OR uses pro-Trump/MAGA messaging in antagonistic or trolling contexts. Includes both promotional organizing and adversarial political posturing.
+
+  ## Allowed Content:
+
+  - News reporting, factual discussion, or analysis about MAGA/Trump
+  - Critical commentary, satire, or opposing viewpoints
+  - Historical or academic discussion
+  - Sincere policy discussion without MAGA framing or antagonism
+  - Sharing news/media without endorsement
+  - Casual mentions in non-promotional, non-antagonistic context
+  - **When uncertain, do not label**
+
+  ## Non-Allowed Content:
+
+  - Direct campaign promotion or fundraising
+  - Rally/event organizing for MAGA gatherings
+  - Calls to action for MAGA activism
+  - "MAGA 2024/2025" or similar campaign slogans
+  - MAGA merchandise promotion
+  - Coordinated hashtag campaigns with promotional intent
+  - **Antagonistic pro-Trump/MAGA messaging:** "Trump is your president", "cry more libs", "MAGA won", etc.
+  - **Trolling with MAGA/Trump framing** intended to provoke or antagonize
+  - Gloating or taunting using MAGA/Trump as the vehicle
+  - Bad-faith engagement using pro-Trump positioning
+
+  ## EDGE CASES (err toward NOT labeling):
+
+  - Factual statements about Trump's presidency without antagonism
+  - Policy agreement without MAGA branding or trolling tone
+  - Genuine political discussion even if pro-Trump
+  - Ambiguous statements without clear promotional or antagonistic intent
+
+  ## EXAMPLES
+
+  Content: "Trump is YOUR president cry harder 🇺🇸"
+  Answer (0 or 1 and {reason}: 1 - Post is overtly pro-trump and antagonistic.
+  Content: "Can't wait for Trump to clean house. MAGA!"
+  Answer (0 or 1 and {reason}: 1 - Post is overtly pro-trump and antagonistic.
+  Content: John Adams 60s drafted Army Inf Sgt Vet. Fine Art photographer. California. Music: jazz, blues, rock, classical. Photography degree. Peace in Ukraine. MAGA, Crypto, hookers will be blocked.
+  Answer (0 or 1 and {reason}: 0 - Profile is overtly anti-trump.

@@ -1,4 +1,8 @@
 import { agent, isLoggedIn } from "./agent.js";
+import { limit } from "./rateLimit.js";
+import { MOD_DID } from "./config.js";
+import logger from "./logger.js";
+import { isRecordNotFoundError } from "./utils/retry.js";
 
 /**
  * Retrieves the text content of a post record from its AT URI.
@@ -11,28 +15,37 @@ import { agent, isLoggedIn } from "./agent.js";
  * @param uri - The AT URI of the post record.
  * @returns The post text, or null if not found.
  */
-export async function getPostContent(uri: string): Promise<string | null> {
-  try {
-    await isLoggedIn;
 
-    // Split the URI into its parts.
-    const parts = uri.split("/");
-    if (parts.length < 5) {
-      console.error("Invalid AT URI format:", uri);
+export const getPostContent = async (
+  uri: string,
+): Promise<string | null> => {
+  await isLoggedIn;
+  return await limit(async () => {
+    try {
+      const response = await agent.tools.ozone.moderation.getRecord(
+        { uri },
+        {
+          headers: {
+            "atproto-proxy": `${MOD_DID}#atproto_labeler`,
+            "atproto-accept-labelers":
+              "did:plc:ar7c4by46qjdydhdevvrndac;redact",
+          },
+        },
+      );
+
+      if (!response.data?.value) {
+        logger.warn({ uri }, "Failed to fetch post record");
+        return null;
+      }
+
+      return response.data.value.text || null;
+    } catch (error) {
+      if (isRecordNotFoundError(error)) {
+        logger.warn({ uri }, "Post record not found, skipping");
+        return null;
+      }
+      logger.error({ error, uri }, "Failed to fetch post content");
       return null;
     }
-    const repo = parts[2]; // the account's DID
-    // We ignore parts[3] since it should be "app.bsky.feed.post" and getPost assumes that collection.
-    const rkey = parts.slice(4).join("/");
-
-    // Call getPost with the repo and rkey
-    const response = await agent.getPost({ repo, rkey });
-
-    // We cast value to an object that may contain a "text" field.
-    const record = response.value as { text?: string };
-    return record.text || null;
-  } catch (error) {
-    console.error(`Error fetching post content for URI ${uri}:`, error);
-    return null;
-  }
-}
+  });
+};

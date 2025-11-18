@@ -26,16 +26,12 @@ export const getProfiles = async (
       return;
     }
   } catch (e) {
-    const isAccountSuspended = (error: any): boolean => {
-      return (
-        error?.err?.stack?.Error === "Account has been suspended" &&
-        error?.err?.message === "Account has been suspended"
-      );
-    };
+    const error = e as any;
+    const isSuspended =
+      error?.message === "Account has been suspended" ||
+      error?.error === "AccountTakedown";
 
-    if (isAccountSuspended(e)) {
-      logger.warn(`${did} has been suspended`);
-    } else {
+    if (!isSuspended) {
       logger.error(e);
     }
   }

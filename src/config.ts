@@ -11,3 +11,5 @@ export const AUTOACK_PERIOD = process.env.AUTOACK_PERIOD
   : 600000;
 export const CLAVATA_AUTH_TOKEN = process.env.CLAVATA_AUTH_TOKEN ?? "";
 export const POLICY_ID = process.env.POLICY_ID ?? "";
+export const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL ?? "";
+export const MODEL = process.env.MODEL ?? "";

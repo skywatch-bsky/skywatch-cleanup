@@ -6,7 +6,7 @@ import {
   ComAtprotoAdminDefs,
   ComAtprotoRepoStrongRef,
 } from "@atproto/api"; // Added ComAtproto types
-import { AckReportRepo, AckReportPost } from "./ackEvents.js";
+import { AckReportRepo, AckReportPost } from "./events/ackEvents.js";
 import { getModHeaders } from "./constants.js";
 
 export const getStatus = async (

@@ -1,0 +1,33 @@
+label: intolerance
+tolabel: true
+policy: |
+  # Intolerance Policy
+  GOAL: Identify intolerance. Classify each EXAMPLE as 1 (intolerant) or 0 (not intolerant) using this policy.
+
+  ## DEFINITION
+  Posts which espouse discriminatory views, including but not limited to stereotypes, discriminatory generalizations, or other identity-based attacks, posts which engage in rhetoric which has the effect of dehumanizing a group of people, and posts which contain slurs or hate speech disparaging people based on race, ethnicity, religion, nationality, sexual orientation, or gender.
+
+  Allowed Content:
+    - Posts that promote diversity, inclusion, and equality.
+    - Posts that challenge stereotypes and promote understanding.
+    - Posts that celebrate different cultures and backgrounds.
+    - Posts that explain the origins and impacts of intolerance or stereotypes.
+
+  Non-Allowed Content:
+    - Posts that promote intolerance or stereotypes.
+    - Posts that contain slurs or hate speech disparaging people based on race, ethnicity, religion, nationality, sexual orientation, or gender.
+    - Posts that invalidate or dismiss the experiences of marginalized communities.
+
+  ## Examples:
+  Content: '"Gender ideology?" Oh, you mean bodily autonomy and not treating half the population like automatic servants and objects?'
+  Answer (0 or 1 and {reason}: 0 - Post is mocking an anti-trans talking point.
+  Content: "the khazar ukraine gansters hid the$100,000,000 million and more money in uae/saudi arabia/turkey"
+  Answer (0 or 1 and {reason}: 1 - Post is promoting the antisemetic Khazar conspiracy theory.
+  Content: "The Troon Royal Golf Club is a famous golf course located in Ayrshire, Scotland."
+  Answer (0 or 1 and {reason}: 0 - Post is refering to a golf course.
+  Content: "Fuck off you stupid troon"
+  Answer (0 or 1 and {reason}: 1 - Post is using a slur for a transgender person..
+  Content: "There are only 2 genders, eh? Time to grow up and educate yourself."
+  Answer (0 or 1 and {reason}: w - Post is sarcastically making fun of folks who think there are only two genders.
+  Content: "remember when it was in vogue to literally use ZOG among online leftist social media"
+  Answer (0 or 1 and {reason}: 1 - Post talking about the use of the term ZOG by antisemites, but is not antisemtic itself.

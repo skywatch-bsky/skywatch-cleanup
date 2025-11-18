@@ -1,5 +1,5 @@
 import { logger } from "./logger.js";
-import { AckReportRepo, AckReportPost } from "./ackEvents.js";
+import { AckReportRepo, AckReportPost } from "./events/ackEvents.js";
 import { ReportHandlingResult } from "./types.js";
 import { SubjectStatusView } from "@atproto/api/dist/client/types/tools/ozone/moderation/defs.js";
 

@@ -5,7 +5,7 @@ import {
   createAccountReport,
   createAccountLabel,
   createAccountComment,
-} from "./moderation.js";
+} from "./events/moderation.js";
 import { limit } from "./rateLimit.js";
 
 export const checkDescription = async (

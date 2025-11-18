@@ -1,7 +1,7 @@
-import { agent, isLoggedIn } from "./agent.js";
-import { limit } from "./rateLimit.js";
-import { getModHeaders } from "./constants.js";
-import { logger } from "./logger.js";
+import { agent, isLoggedIn } from "../agent.js";
+import { limit } from "../rateLimit.js";
+import { getModHeaders } from "../constants.js";
+import { logger } from "../logger.js";
 
 export const AckReportRepo = async (
   did: string,
@@ -29,6 +29,13 @@ export const AckReportRepo = async (
           },
           createdBy: `${agent.did}`,
           createdAt: new Date().toISOString(),
+          modTool: {
+            name: "skywatch/skywatch-cleanup",
+            meta: {
+              time: new Date().toISOString(),
+              externalUrl: `https://pdsls.dev/${did}`,
+            },
+          },
         },
         { headers: getModHeaders() },
       );
@@ -42,6 +49,7 @@ export const AckReportPost = async (
   uri: string,
   cid: string,
   subjectType: string,
+  comment: string | undefined,
 ) => {
   await limit(async () => {
     if (!uri || !cid || !subjectType) {
@@ -56,7 +64,7 @@ export const AckReportPost = async (
         {
           event: {
             $type: "tools.ozone.moderation.defs#modEventAcknowledge",
-            comment: `Report for ${uri} is out of scope.`,
+            comment: comment || `Report for ${uri} is out of scope.`,
           },
           subject: {
             $type: subjectType,
@@ -65,6 +73,13 @@ export const AckReportPost = async (
           },
           createdBy: `${agent.did}`,
           createdAt: new Date().toISOString(),
+          modTool: {
+            name: "skywatch/skywatch-cleanup",
+            meta: {
+              time: new Date().toISOString(),
+              externalUrl: `https://pdsls.dev/${uri}`,
+            },
+          },
         },
         { headers: getModHeaders() },
       );

@@ -1,19 +1,41 @@
 import { logger } from "./logger.js";
 import { getProfiles, hasProfileLabel } from "./getProfiles.js";
-import { AckReportRepo, AckReportPost } from "./ackEvents.js";
-import { IGNORED_DIDS, ReportCheck } from "./constants.js";
+import {
+  IGNORED_DIDS,
+  ReportCheck,
+  POLICIES,
+  GLOBAL_ALLOW,
+} from "./constants.js";
 import { ReportHandlingResult } from "./types.js";
 import { ModEventView } from "@atproto/api/dist/client/types/tools/ozone/moderation/defs.js";
-import {
-  createAccountLabel,
-  createAccountComment,
-  createPostComment,
-} from "./moderation.js";
-import { checkDescription, checkDisplayName } from "./checkProfiles.js";
-import { processClavataEvaluation } from "./clavataPolicy.js";
+import { createPostLabel, createAccountReport } from "./events/moderation.js";
 import { getPostContent } from "./getPosts.js";
-import { time } from "console";
-import exp from "constants";
+import { loadPolicy } from "./loader.js";
+import { createChatCompletion } from "./ollama.js";
+import { MODEL } from "./config.js";
+import { AckReportRepo, AckReportPost } from "./events/ackEvents.js";
+
+async function evaluateContentPolicy(
+  policyName: string,
+  content: string,
+): Promise<{ flag?: number; reason: string } | null> {
+  try {
+    const policy = loadPolicy(policyName);
+
+    const response = await createChatCompletion({
+      model: MODEL,
+      messages: [
+        { role: "system", content: policy.policy },
+        { role: "user", content },
+      ],
+    });
+
+    return response.choices[0].message;
+  } catch (error) {
+    // Silently return null - these are often expected errors (suspended accounts, Ollama timeouts)
+    return null;
+  }
+}
 
 export async function handleRepoReport(
   event: ModEventView,
@@ -28,6 +50,19 @@ export async function handleRepoReport(
   const user = event.subject.did as string;
   const eventType = event.subject.$type as string;
   const profile = await getProfiles(user);
+
+  if (GLOBAL_ALLOW.includes(user)) {
+    logger.info(`Ignoring DID: ${user}`);
+    await AckReportRepo(
+      user,
+      eventType,
+      `Report for ${user} is out of scope due to being on allowList.`,
+    );
+    return {
+      success: true,
+      message: "Ignored DID acknowledged",
+    };
+  }
 
   // Handle invalid handle
   if (event.subjectHandle === "handle.invalid") {
@@ -90,74 +125,6 @@ export async function handleRepoReport(
       );
       return { success: true, message: "Report acknowledged." };
     }
-
-    // Send to processClavataEvaluation
-    if (profile?.displayName) {
-      const displayName = profile.displayName;
-      await checkDisplayName(user, Date.now(), displayName);
-    }
-
-    if (profile?.description) {
-      const description = profile.description;
-      logger.info(`Event ${id}: Sending report for ${user} to Clavata AI`);
-      await processClavataEvaluation(
-        description,
-        user,
-        id,
-        createAccountComment,
-      );
-
-      await checkDescription(user, Date.now(), description);
-
-      return {
-        success: true,
-        message: "Report sent to Clavata AI and rechecked.",
-      };
-    }
-  }
-  return { success: true, message: "Report processed" };
-}
-
-// Handle Wencil imports seperately
-export async function handleImportReport(
-  event: ModEventView,
-): Promise<ReportHandlingResult> {
-  const id = event.id;
-
-  const user = event.subject.did as string;
-  const eventType = event.subject.$type as string;
-
-  // Process Wencil Blocklist
-  if (event.createdBy === "did:plc:dbnoyyuzwgps2zr7v2psvp6o") {
-    const comment = event.event.comment as string;
-    if (comment.includes("post with spam url associated with bot")) {
-      logger.info(
-        `Event ${id}: Auto-acknowledging experimental event for ${user}`,
-      );
-      await AckReportRepo(user, eventType, "Experimental Event");
-      return {
-        success: true,
-        message: "Auto-acknowledging report.",
-      };
-    }
-
-    logger.info(
-      `Event ${id}: Labeling report for ${user} due to inclusion on imported blocklist.`,
-    );
-    await createAccountLabel(
-      user,
-      "suspect-inauthentic",
-      "Imported from https://bsky.app/profile/did:plc:d7nr65djxrudtdg3tslzfiyr/lists/3lcm6ypfdj72r",
-    );
-    await AckReportRepo(
-      user,
-      "com.atproto.admin.defs#repoRef",
-      `Report is autolabeled.`,
-    );
-    return {
-      success: true,
-      message: "Labeled suspected inauthentic.",
-    };
   }
   return { success: true, message: "Report processed" };
 }
@@ -181,7 +148,12 @@ export async function handlePostReport(
     logger.info(
       `Event ${id}: Auto-acknowledging tombstone event for ${uri} with CID ${cid}`,
     );
-    await AckReportPost(uri, cid, eventType);
+    await AckReportPost(
+      uri,
+      cid,
+      eventType,
+      `Event ${id}: Auto-acknowledging tombstone event for ${uri} with CID ${cid}`,
+    );
     return { success: true, message: "Tombstone event acknowledged" };
   }
 
@@ -190,7 +162,12 @@ export async function handlePostReport(
     logger.info(
       `Event ${id}: Out of scope record reported with ${uri} with CID ${cid}`,
     );
-    await AckReportPost(uri, cid, eventType);
+    await AckReportPost(
+      uri,
+      cid,
+      eventType,
+      `Event ${id}: Out of scope record reported with ${uri} with CID ${cid}`,
+    );
     return { success: true, message: "Out of scope report acknowledged" };
   }
 
@@ -200,7 +177,12 @@ export async function handlePostReport(
       logger.info(
         `Event ${id}: Comment indicates out of scope record reported with ${uri} with CID ${cid}`,
       );
-      await AckReportPost(uri, cid, eventType);
+      await AckReportPost(
+        uri,
+        cid,
+        eventType,
+        `Event ${id}: Comment indicates out of scope record reported with ${uri} with CID ${cid}`,
+      );
       return {
         success: true,
         message: "Out of scope report acknowledged",
@@ -214,11 +196,28 @@ export async function handlePostReport(
   if (uri.split("/")[3] == "app.bsky.feed.post") {
     const post = await getPostContent(uri);
     // Like above, we are erring on the side of annotating anything that is reported
+    //
+
     if (post) {
-      await processClavataEvaluation(post, uri, id, (uri, comment) =>
-        createPostComment(uri, cid, comment),
-      );
+      for (const checkPolicy of POLICIES) {
+        const policy = loadPolicy(checkPolicy);
+        const result = await evaluateContentPolicy(checkPolicy, post);
+
+        if (result) {
+          logger.info(result);
+          if (result.flag === 1) {
+            void createPostLabel(uri, cid, `${checkPolicy}`, result.reason);
+          } else if (result.flag === 0) {
+            void AckReportPost(
+              uri,
+              cid,
+              "com.atproto.repo.strongRef",
+              `${checkPolicy}`,
+            );
+          }
+        }
+      }
     }
+    return { success: true, message: "Post processed" };
   }
-  return { success: true, message: "Post processed" };
 }
