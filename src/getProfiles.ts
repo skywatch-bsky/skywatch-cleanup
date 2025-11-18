@@ -1,7 +1,11 @@
 import { agent, isLoggedIn } from "./agent.js";
-import { limit } from "./rateLimit.js";
+import { profilesServiceLimit } from "./rateLimit.js";
 import { logger } from "./logger.js";
 import { AppBskyActorDefs } from "@atproto/api";
+import { ProfilesService } from "./hydration/profiles.service.js";
+
+// Initialize service once at module level
+const profilesService = new ProfilesService(agent, profilesServiceLimit);
 
 export const getProfiles = async (
   did: string,
@@ -9,21 +13,24 @@ export const getProfiles = async (
   try {
     await isLoggedIn;
 
-    let profile: AppBskyActorDefs.ProfileViewDetailed;
+    const hydrated = await profilesService.hydrateProfile(did);
 
-    const resp = await limit(() =>
-      agent.app.bsky.actor.getProfile({
-        actor: did,
-      }),
-    );
+    if (!hydrated) {
+      logger.info({ did }, "Profile not found");
+      return undefined;
+    }
 
-    profile = resp.data;
+    // Reconstruct the AppBskyActorDefs.ProfileViewDetailed object
+    // by returning the result from the underlying API call
+    const resp = await agent.app.bsky.actor.getProfile({
+      actor: did,
+    });
 
     if (resp.success) {
-      return profile;
+      return resp.data;
     } else {
-      logger.info(`Profile not found: ${did}`);
-      return;
+      logger.info({ did }, "Profile not found");
+      return undefined;
     }
   } catch (e) {
     const error = e as any;
@@ -32,36 +39,18 @@ export const getProfiles = async (
       error?.error === "AccountTakedown";
 
     if (!isSuspended) {
-      logger.error(e);
+      logger.error({ error, did }, "Failed to fetch profile");
+    } else {
+      logger.warn({ did }, "Account is suspended");
     }
+    return undefined;
   }
 };
 
 export function hasProfileLabel(profile: any, labelToFind: string): boolean {
-  // Safety check for null or undefined
-  if (!profile || !profile.labels) {
+  if (!profile?.labels || !Array.isArray(profile.labels)) {
     return false;
   }
 
-  try {
-    // Get all label values
-    const labelValues = profile.labels.map((label: any) => label.value);
-
-    // Check if the array includes our label
-    // Don't call the label as a function! Just compare it as a string
-    return labelValues.indexOf(labelToFind) !== -1;
-
-    // Alternative approach using a loop to avoid any potential issues
-    /*
-    for (const label of profile.labels) {
-      if (label && label.value === labelToFind) {
-        return true;
-      }
-    }
-    return false;
-    */
-  } catch (error) {
-    console.error(`Error checking for label '${labelToFind}':`, error);
-    return false;
-  }
+  return profile.labels.some((label: any) => label.value === labelToFind);
 }
