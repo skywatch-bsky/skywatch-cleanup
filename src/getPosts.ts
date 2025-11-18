@@ -1,8 +1,10 @@
 import { agent, isLoggedIn } from "./agent.js";
-import { limit } from "./rateLimit.js";
-import { MOD_DID } from "./config.js";
+import { postsServiceLimit } from "./rateLimit.js";
 import logger from "./logger.js";
-import { isRecordNotFoundError } from "./utils/retry.js";
+import { PostsService } from "./hydration/posts.service.js";
+
+// Initialize service once at module level
+const postsService = new PostsService(agent, postsServiceLimit);
 
 /**
  * Retrieves the text content of a post record from its AT URI.
@@ -15,37 +17,14 @@ import { isRecordNotFoundError } from "./utils/retry.js";
  * @param uri - The AT URI of the post record.
  * @returns The post text, or null if not found.
  */
-
-export const getPostContent = async (
-  uri: string,
-): Promise<string | null> => {
+export const getPostContent = async (uri: string): Promise<string | null> => {
   await isLoggedIn;
-  return await limit(async () => {
-    try {
-      const response = await agent.tools.ozone.moderation.getRecord(
-        { uri },
-        {
-          headers: {
-            "atproto-proxy": `${MOD_DID}#atproto_labeler`,
-            "atproto-accept-labelers":
-              "did:plc:ar7c4by46qjdydhdevvrndac;redact",
-          },
-        },
-      );
 
-      if (!response.data?.value) {
-        logger.warn({ uri }, "Failed to fetch post record");
-        return null;
-      }
-
-      return response.data.value.text || null;
-    } catch (error) {
-      if (isRecordNotFoundError(error)) {
-        logger.warn({ uri }, "Post record not found, skipping");
-        return null;
-      }
-      logger.error({ error, uri }, "Failed to fetch post content");
-      return null;
-    }
-  });
+  try {
+    const hydrated = await postsService.hydratePost(uri);
+    return hydrated?.text || null;
+  } catch (error) {
+    logger.error({ error, uri }, "Failed to get post content");
+    return null;
+  }
 };
