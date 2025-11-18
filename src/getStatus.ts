@@ -39,6 +39,7 @@ export const getStatus = async (
             includeMuted: true,
             sortField: "lastReportedAt",
             sortDirection: "desc",
+            reviewState: "tools.ozone.moderation.defs#reviewOpen",
           },
           { headers: getModHeaders() },
         ),
