@@ -260,9 +260,13 @@ export async function handlePostReport(
   }
 
   const user = uri.split("/")[2];
+  const contentType = uri.split("/")[3];
+
+  logger.info({ uri, contentType }, "Processing post report");
+
   // Right now have only implemented this for posts
   // other reportable content types will need to be added
-  if (uri.split("/")[3] == "app.bsky.feed.post") {
+  if (contentType == "app.bsky.feed.post") {
     const post = await getPostContent(uri);
     // Like above, we are erring on the side of annotating anything that is reported
     //
@@ -294,8 +298,17 @@ export async function handlePostReport(
           }
         }
       }
+    } else {
+      logger.warn(
+        { uri },
+        "Post content not found or unable to retrieve",
+      );
     }
-    // void createPostTag(uri, cid, "triaged", "");
+  } else {
+    logger.info(
+      { uri, contentType },
+      "Unsupported content type, skipping post processing",
+    );
   }
   return { success: true, message: "Post processed" };
 }
