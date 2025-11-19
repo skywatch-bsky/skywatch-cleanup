@@ -8,34 +8,35 @@ policy: |
   Posts which espouse discriminatory views, including but not limited to stereotypes, discriminatory generalizations, or other identity-based attacks, posts which engage in rhetoric which has the effect of dehumanizing a group of people, and posts which contain slurs or hate speech disparaging people based on race, ethnicity, religion, nationality, sexual orientation, or gender.
 
   Allowed Content:
-    - Posts that promote diversity, inclusion, and equality.
-    - Posts that challenge stereotypes and promote understanding.
-    - Posts that celebrate different cultures and backgrounds.
-    - Posts that explain the origins and impacts of intolerance or stereotypes.
+    - Content that promotes diversity, inclusion, and equality.
+    - Content that challenges stereotypes and promote understanding.
+    - Content that celebrates different cultures and backgrounds.
+    - Content that explains the origins and impacts of intolerance or stereotypes.
+    - Content that reclaims slurs for the purpose of undermining the power dynamics of oppression.
 
   Non-Allowed Content:
-    - Posts that promote intolerance or stereotypes.
-    - Posts that contain slurs or hate speech disparaging people based on race, ethnicity, religion, nationality, sexual orientation, or gender.
-    - Posts that invalidate or dismiss the experiences of marginalized communities.
+    - Content that promotes intolerance or stereotypes.
+    - Content that contains slurs or hate speech disparaging people based on race, ethnicity, religion, nationality, sexual orientation, or gender.
+    - Content that invalidates or dismisses the experiences of marginalized communities.
 
   ## Examples:
   Content: '"Gender ideology?" Oh, you mean bodily autonomy and not treating half the population like automatic servants and objects?'
-  Answer ({flag} - {reason}): 0 - Post is mocking an anti-trans talking point.
+  Answer ({flag} - {reason}): 0 - Content is mocking an anti-trans talking point.
   Content: "the khazar ukraine gansters hid the $100,000,000 million and more money in uae/saudi arabia/turkey"
-  Answer ({flag} - {reason}): 1 - Post is promoting the antisemetic Khazar conspiracy theory.
+  Answer ({flag} - {reason}): 1 - Content is promoting the antisemetic Khazar conspiracy theory.
   Content: "The Troon Royal Golf Club is a famous golf course located in Ayrshire, Scotland."
-  Answer ({flag} - {reason}): 0 - Post is refering to a golf course.
+  Answer ({flag} - {reason}): 0 - Content is refering to a golf course.
   Content: Fuck off you stupid troon
-  Answer ({flag} - {reason}): 1 - Post is using a slur for a transgender person..
+  Answer ({flag} - {reason}): 1 - Content is using a slur for a transgender person..
   Content: There are only 2 genders, eh? Time to grow up and educate yourself.
-  Answer ({flag} - {reason}): 0 - Post is sarcastically making fun of folks who think there are only two genders.
+  Answer ({flag} - {reason}): 0 - Content is sarcastically making fun of folks who think there are only two genders.
   Content: remember when it was in vogue to literally use ZOG among online leftist social media
-  Answer ({flag} - {reason}): 0 - Post talking about the use of the term ZOG by antisemites, but is not antisemtic itself.
+  Answer ({flag} - {reason}): 0 - Content talking about the use of the term ZOG by antisemites, but is not antisemtic itself.
   Content: Maybe I never knew what Kike actually looks like because
-  Answer ({flag} - {reason}): 0 - Post is referring to Kike Hernandez, a player for the LA Dodgers."
+  Answer ({flag} - {reason}): 0 - Content is referring to Kike Hernandez, a player for the LA Dodgers."
   Content: i do like how papa leo and the (orange) catholic church are taking a harder stance against ai but i also can't wait for dignitas infinita 2.0 comparing "transgenderism" and "gender ideology" to ai and thinking machines on top of atomic weaponry
-  Answer ({flag} - {reason}): 0 - Post is expressing concern about the potential comparison of transgender people to atomic weaponry.
+  Answer ({flag} - {reason}): 0 - Content is expressing concern about the potential comparison of transgender people to atomic weaponry.
   Content: YWNBAW faggot
-  Answer ({flag} - {reason}): 1 - Post is using a slur and a transphobic term (YWNBAW: You will never be a real woman).
+  Answer ({flag} - {reason}): 1 - Content is using a slur and a transphobic term (YWNBAW: You will never be a real woman).
   Content: With pleasure. Greens are against women having sport free of biological males. They are against segregation of prisons by sex, as per longstanding international convention. They claim democratic values yet purge their membership of those who advocate against these positions. They are fucking insane.
-  Answer ({flag} - {reason}): 1 - Post is advocating a discriminatory policy against transgender individuals.
+  Answer ({flag} - {reason}): 1 - Content is advocating a discriminatory policy against transgender individuals.

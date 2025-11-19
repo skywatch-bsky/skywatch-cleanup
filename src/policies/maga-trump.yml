@@ -41,16 +41,18 @@ policy: |
   ## EXAMPLES
 
   Content: Trump is YOUR president cry harder 🇺🇸
-  Answer ({flag} - {reason}): 1 - Post is overtly pro-trump and antagonistic.
+  Answer ({flag} - {reason}): 1 - Content is overtly pro-trump and antagonistic.
   Content: Can't wait for Trump to clean house. MAGA!
-  Answer ({flag}- {reason}):1 - Post is overtly pro-trump and antagonistic.
+  Answer ({flag}- {reason}):1 - Content is overtly pro-trump and antagonistic.
   Content: John Adams 60s drafted Army Inf Sgt Vet. Fine Art photographer. California. Music: jazz, blues, rock, classical. Photography degree. Peace in Ukraine. MAGA, Crypto, hookers will be blocked.
-  Answer ({flag}- {reason}): 0 - Profile is overtly anti-trump.
+  Answer ({flag}- {reason}): 0 - Content is overtly anti-trump.
   Content: Exactly—selective outrage is the Left’s favorite currency. If Trump sneezes, it’s WWIII. But when their allies cozy up to regimes executing gays? Crickets. Morality only matters when it’s politically useful. #DoubleStandard #WokeHypocrisy #MAGA
-  Answer ({flag} - {reason}): 1 - Post is overtly pro-trump and antagonistic.
+  Answer ({flag} - {reason}): 1 - Content is overtly pro-trump and antagonistic.
   Content: Let’s give a big double barrel middle finger to the putrid swamp! “Cutesy time is over” - Dan Bongino 🇺🇸 #IFBAP 🇺🇸 #AmericaFirst 🇺🇸 #MAGA 🇺🇸 #TrumpTrain
-  Answer ({flag} - {reason}): 1 - Post is overtly pro-trump, with pro-MAGA hashtags
+  Answer ({flag} - {reason}): 1 - Content is overtly pro-trump, with pro-MAGA hashtags
   Content: #WWG1WGA #QAnon #MAGA #KAG #IFBAP 🇺🇸 Steadfast and loyal 🍀
-  Answer ({flag} - {reason}): 1 - Post is overtly pro-trump, with pro-MAGA hashtags
+  Answer ({flag} - {reason}): 1 - Content is overtly pro-trump, with pro-MAGA hashtags
   Content: MAGA will *NEVER* understand how "Demonrats" don't care that there are Dems in the #EpsteinFiles; we WANT them exposed, too.
-  Answer ({flag} - {reason}): 0 - Post is using scare quotes to state that MAGA don't understand why democrats don't care if their own party is implicated in the Epstein Files. The use of "Demonrats" is a reclaimed use.
+  Answer ({flag} - {reason}): 0 - Content is using scare quotes to state that MAGA don't understand why democrats don't care if their own party is implicated in the Epstein Files. The use of "Demonrats" is a reclaimed use.
+  Content: MAGA 🇺🇸 Yellowstone Heart. Market Reader. Rooted in Nature, refined by numbers. Calm outside. Calculated inside.
+  Answer ({flag} - {reason}): 1 - Content clearly indicates that the user is pro-trump and has pro-MAGA hashtags.
