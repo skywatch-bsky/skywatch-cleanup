@@ -174,7 +174,7 @@ export const createPostTag = async (
     try {
       const event: {
         $type: string;
-        tag: string;
+        tag: string[];
         comment: string;
       } = {
         $type: "tools.ozone.moderation.defs#modEventTag",
