@@ -159,6 +159,7 @@ export async function handleRepoReport(
     const profile = await getProfiles(user);
     if (profile?.description) {
       const description = profile.description;
+      let iter = 0;
       for (const checkPolicy of POLICIES) {
         const policy = loadPolicy(checkPolicy);
         const result = await evaluateContentPolicy(policy.label, description);
@@ -172,8 +173,12 @@ export async function handleRepoReport(
               `${policy.label}`,
               `${result.reason}`,
             );
+            iter++;
           }
         }
+      }
+      if (iter === 0) {
+        void createAccountComment(user, "No Policy Match", `at://${user}`);
       }
     }
     // void createAccountTag(user, "triaged", "");
@@ -272,6 +277,7 @@ export async function handlePostReport(
     //
 
     if (post) {
+      let iter = 0;
       for (const checkPolicy of POLICIES) {
         const policy = loadPolicy(checkPolicy);
         const result = await evaluateContentPolicy(policy.label, post);
@@ -289,20 +295,15 @@ export async function handlePostReport(
               user,
               `Post at ${uri} classified as ${policy.label} for ${result.reason}`,
             );
-          } else if (result.flag === 0) {
-            void createPostComment(
-              uri,
-              cid,
-              `Post at ${uri} reviewed by gpt-oss-safeguard and not classified as ${policy.label} for reason: ${result.reason}`,
-            );
+            iter++;
           }
         }
       }
+      if (iter === 0) {
+        void createPostComment(uri, cid, "No Policy Match");
+      }
     } else {
-      logger.warn(
-        { uri },
-        "Post content not found or unable to retrieve",
-      );
+      logger.warn({ uri }, "Post content not found or unable to retrieve");
     }
   } else {
     logger.info(
