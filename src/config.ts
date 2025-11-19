@@ -13,3 +13,10 @@ export const CLAVATA_AUTH_TOKEN = process.env.CLAVATA_AUTH_TOKEN ?? "";
 export const POLICY_ID = process.env.POLICY_ID ?? "";
 export const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL ?? "";
 export const MODEL = process.env.MODEL ?? "";
+export const QUEUE_INDEX = process.env.QUEUE_INDEX
+  ? parseInt(process.env.QUEUE_INDEX, 0)
+  : undefined;
+export const QUEUE_SEED = process.env.QUEUE_SEED;
+export const QUEUE_COUNT = process.env.QUEUE_COUNT
+  ? parseInt(process.env.QUEUE_COUNT, 1)
+  : undefined;

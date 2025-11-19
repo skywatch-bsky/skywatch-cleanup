@@ -8,6 +8,7 @@ import {
 } from "@atproto/api"; // Added ComAtproto types
 import { AckReportRepo, AckReportPost } from "./events/ackEvents.js";
 import { getModHeaders } from "./constants.js";
+import { QUEUE_INDEX, QUEUE_SEED, QUEUE_COUNT } from "./config.js";
 
 export const getStatus = async (
   startDate: string, // Assuming this is the EARLIER date
@@ -40,6 +41,9 @@ export const getStatus = async (
             sortField: "lastReportedAt",
             sortDirection: "desc",
             reviewState: "tools.ozone.moderation.defs#reviewOpen",
+            queueIndex: QUEUE_INDEX,
+            queueSeed: QUEUE_SEED,
+            queueCount: QUEUE_COUNT,
           },
           { headers: getModHeaders() },
         ),
