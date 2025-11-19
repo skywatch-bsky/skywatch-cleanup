@@ -14,6 +14,7 @@ import {
   createAccountLabel,
   createAccountComment,
   createAccountReport,
+  createPostTag,
 } from "./events/moderation.js";
 import { getPostContent } from "./getPosts.js";
 import { loadPolicy } from "./loader.js";
@@ -95,6 +96,22 @@ export async function handleRepoReport(
     return { success: true, message: "Tombstone acknowledged" };
   }
 
+  // Acknowledge tomestoned events
+  if (event.event.hasOwnProperty("tag")) {
+    const tag = event.event.tag as string;
+    if (tag === "triaged") {
+      logger.info(
+        `Event ${id}: Auto-acknowledging previously reviewed event for ${user} with tag: ${tag}`,
+      );
+      await AckReportRepo(
+        user,
+        eventType,
+        `Event ${id}: Auto-acknowledging previously reviewed event for ${user} with tag: ${tag}`,
+      );
+      return { success: true, message: "Tag event acknowledged" };
+    }
+  }
+
   // Handle ignored DIDs
   if (IGNORED_DIDS.includes(user)) {
     logger.info(`Ignoring DID: ${user}`);
@@ -154,7 +171,7 @@ export async function handleRepoReport(
               `${policy.label}`,
               `${result.reason}`,
             );
-          }   
+          }
         }
       }
     }
@@ -188,6 +205,23 @@ export async function handlePostReport(
       `Event ${id}: Auto-acknowledging tombstone event for ${uri} with CID ${cid}`,
     );
     return { success: true, message: "Tombstone event acknowledged" };
+  }
+
+  // Acknowledge tomestoned events
+  if (event.event.hasOwnProperty("tag")) {
+    const tag = event.event.tag as string;
+    if (tag === "triaged") {
+      logger.info(
+        `Event ${id}: Auto-acknowledging previously reviewed event for ${uri} with tag: ${tag}`,
+      );
+      await AckReportPost(
+        uri,
+        cid,
+        eventType,
+        `Event ${id}: Auto-acknowledging previously reviewed event for ${uri} with tag: ${tag}`,
+      );
+      return { success: true, message: "Tag event acknowledged" };
+    }
   }
 
   // Acknowledge out of scope reports
@@ -249,6 +283,7 @@ export async function handlePostReport(
               user,
               `Post at ${uri} classified as ${policy.label} for ${result.reason}`,
             );
+            void createPostTag(uri, cid, "triaged", "");
           } else if (result.flag === 0) {
             void createPostComment(
               uri,
