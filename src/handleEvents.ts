@@ -62,7 +62,6 @@ export async function handleRepoReport(
 
   const user = event.subject.did as string;
   const eventType = event.subject.$type as string;
-  const profile = await getProfiles(user);
 
   if (GLOBAL_ALLOW.includes(user)) {
     logger.info(`Ignoring DID: ${user}`);
@@ -139,6 +138,7 @@ export async function handleRepoReport(
       return { success: true, message: "Report acknowledged." };
     }
 
+    const profile = await getProfiles(user);
     if (profile?.description) {
       const description = profile.description;
       for (const checkPolicy of POLICIES) {
@@ -157,7 +157,7 @@ export async function handleRepoReport(
           } else if (result.flag === 0) {
             void createAccountComment(
               user,
-              `${user} profile reviewed by gpt-oss-safeguard and not classified as ${policy.label} for ${result.reason}`,
+              `${user} profile reviewed by gpt-oss-safeguard and not classified as ${policy.label} for reason: ${result.reason}`,
               `at://${user}`,
             );
           }
@@ -259,7 +259,7 @@ export async function handlePostReport(
             void createPostComment(
               uri,
               cid,
-              `Post at ${uri} reviewed by gpt-oss-safeguard and not classified as ${policy.label} for ${result.reason}`,
+              `Post at ${uri} reviewed by gpt-oss-safeguard and not classified as ${policy.label} for reason: ${result.reason}`,
             );
           }
         }
