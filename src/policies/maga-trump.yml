@@ -52,3 +52,5 @@ policy: |
   Answer ({flag} - {reason}): 1 - Post is overtly pro-trump, with pro-MAGA hashtags
   Content: #WWG1WGA #QAnon #MAGA #KAG #IFBAP 🇺🇸 Steadfast and loyal 🍀
   Answer ({flag} - {reason}): 1 - Post is overtly pro-trump, with pro-MAGA hashtags
+  Content: MAGA will *NEVER* understand how "Demonrats" don't care that there are Dems in the #EpsteinFiles; we WANT them exposed, too.
+  Answer ({flag} - {reason}): 0 - Post is using scare quotes to state that MAGA don't understand why democrats don't care if their own party is implicated in the Epstein Files. The use of "Demonrats" is a reclaimed use.
