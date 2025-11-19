@@ -15,6 +15,7 @@ import {
   createAccountComment,
   createAccountReport,
   createPostTag,
+  createAccountTag,
 } from "./events/moderation.js";
 import { getPostContent } from "./getPosts.js";
 import { loadPolicy } from "./loader.js";
@@ -175,6 +176,7 @@ export async function handleRepoReport(
         }
       }
     }
+    void createAccountTag(user, "triaged", "");
   }
   return { success: true, message: "Report processed" };
 }
@@ -283,7 +285,6 @@ export async function handlePostReport(
               user,
               `Post at ${uri} classified as ${policy.label} for ${result.reason}`,
             );
-            void createPostTag(uri, cid, "triaged", "");
           } else if (result.flag === 0) {
             void createPostComment(
               uri,
@@ -294,6 +295,7 @@ export async function handlePostReport(
         }
       }
     }
+    void createPostTag(uri, cid, "triaged", "");
   }
   return { success: true, message: "Post processed" };
 }
