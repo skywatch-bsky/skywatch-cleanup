@@ -159,13 +159,15 @@ export async function handleRepoReport(
     const profile = await getProfiles(user);
     if (profile?.description) {
       const description = profile.description;
-      let iter = 0;
+      let hasEvaluatedAny = false;
+      let hasMatched = false;
       for (const checkPolicy of POLICIES) {
         const policy = loadPolicy(checkPolicy);
         const result = await evaluateContentPolicy(policy.label, description);
         logger.info(`Event ${id}: Evaluated against ${policy.label}`);
 
         if (result) {
+          hasEvaluatedAny = true;
           logger.info(result);
           if (result.flag === 1) {
             void createAccountLabel(
@@ -173,11 +175,11 @@ export async function handleRepoReport(
               `${policy.label}`,
               `${result.reason}`,
             );
-            iter++;
+            hasMatched = true;
           }
         }
       }
-      if (iter === 0) {
+      if (hasEvaluatedAny && !hasMatched) {
         void createAccountComment(user, "No Policy Match", `at://${user}`);
       }
     }
@@ -277,12 +279,14 @@ export async function handlePostReport(
     //
 
     if (post) {
-      let iter = 0;
+      let hasEvaluatedAny = false;
+      let hasMatched = false;
       for (const checkPolicy of POLICIES) {
         const policy = loadPolicy(checkPolicy);
         const result = await evaluateContentPolicy(policy.label, post);
 
         if (result) {
+          hasEvaluatedAny = true;
           logger.info(result);
           if (result.flag === 1) {
             void createPostLabel(
@@ -295,11 +299,11 @@ export async function handlePostReport(
               user,
               `Post at ${uri} classified as ${policy.label} for ${result.reason}`,
             );
-            iter++;
+            hasMatched = true;
           }
         }
       }
-      if (iter === 0) {
+      if (hasEvaluatedAny && !hasMatched) {
         void createPostComment(uri, cid, "No Policy Match");
       }
     } else {
