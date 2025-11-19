@@ -154,13 +154,7 @@ export async function handleRepoReport(
               `${policy.label}`,
               `${result.reason}`,
             );
-          } else if (result.flag === 0) {
-            void createAccountComment(
-              user,
-              `${user} profile reviewed by gpt-oss-safeguard and not classified as ${policy.label} for reason: ${result.reason}`,
-              `at://${user}`,
-            );
-          }
+          }   
         }
       }
     }
