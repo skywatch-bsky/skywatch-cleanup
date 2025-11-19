@@ -176,7 +176,7 @@ export async function handleRepoReport(
         }
       }
     }
-    void createAccountTag(user, "triaged", "");
+    // void createAccountTag(user, "triaged", "");
   }
   return { success: true, message: "Report processed" };
 }
@@ -295,7 +295,7 @@ export async function handlePostReport(
         }
       }
     }
-    void createPostTag(uri, cid, "triaged", "");
+    // void createPostTag(uri, cid, "triaged", "");
   }
   return { success: true, message: "Post processed" };
 }
