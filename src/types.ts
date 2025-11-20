@@ -18,24 +18,17 @@ export interface ReportHandlingResult {
   message: string;
 }
 
-interface Report {
-  id: number;
+export interface Report {
+  ozone_id: number;
+  id: string;
+  type: string;
   reviewState: string;
   createdAt: string;
   updatedAt: string;
   lastReportedAt: string;
   takendown: boolean;
-  subjectRepoHandle: string;
-  subjectBlobCids: string[];
-  tags: string[];
-  subject: {
-    $type: string;
-    did: string;
-  };
-  hosting: {
-    $type: string;
-    status: string;
-  };
+  labels: string[];
+  content: string;
 }
 
 export interface Checks {

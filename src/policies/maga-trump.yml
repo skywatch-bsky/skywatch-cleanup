@@ -56,3 +56,5 @@ policy: |
   Answer ({flag} - {reason}): 0 - Content is using scare quotes to state that MAGA don't understand why democrats don't care if their own party is implicated in the Epstein Files. The use of "Demonrats" is a reclaimed use.
   Content: MAGA 🇺🇸 Yellowstone Heart. Market Reader. Rooted in Nature, refined by numbers. Calm outside. Calculated inside.
   Answer ({flag} - {reason}): 1 - Content clearly indicates that the user is pro-trump and has pro-MAGA hashtags.
+  Content: Christian, Wife, Republican, and VOTED FOR TRUMP!
+  Answer ({flag} - {reason}): 1 - Content is overtly pro-trump
