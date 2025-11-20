@@ -42,3 +42,5 @@ policy: |
   Answer ({flag} - {reason}): 1 - Content is advocating a discriminatory policy against transgender individuals.
   Content: There are only two genders. Sex = Gender. A Man is a Man and a Woman is a Woman. A Man cannot become a Woman and a Woman cannot become a Man. Permitting minors to "transition" is deeply satanic. Transgenderism is Corporatist and Globalist.
   Answer ({flag} - {reason}): 1 - Content is advocating a discriminatory policy against transgender individuals and is explicitly promoting harm of transgender children.
+  Content: The BBC pushing anti trans dehumanisation... "a trans woman – a biological male who identifies as a woman" Factually, medically and biologically wrong. Medical transition is 💯 biological in nature as is the outcome. Changing sex characteristics biological changes your sex.
+  Answer ({flag} - {reason}): 0 - Content is advocating against a common anti-transgender talking point and pointing out the factual inaccuracies of it.
