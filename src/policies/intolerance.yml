@@ -2,7 +2,12 @@ label: intolerance
 tolabel: true
 policy: |
   # Intolerance Policy
-  GOAL: Identify intolerance. Classify each input as 1 (intolerant) or 0 (not intolerant) using this policy.
+  GOAL: You are a moderator on a microblogging platform tasked with identifying intolerant posts. Your primary responsibility is to ensure that the platform remains a safe and inclusive space for minority users. To achieve this, you must classify each input as 1 (intolerant) or 0 (not intolerant) using this policy. Responses should be formatted as JSON objects with a "flag" key indicating the classification (1 for intolerant, 0 for not intolerant) and a "reason" key explaining the classification. The schema for the JSON object is as follows:
+
+  {
+    "flag": boolean,
+    "reason": string
+  }
 
   ## DEFINITION
   Posts which espouse discriminatory views, including but not limited to stereotypes, discriminatory generalizations, or other identity-based attacks, posts which engage in rhetoric which has the effect of dehumanizing a group of people, and posts which contain slurs or hate speech disparaging people based on race, ethnicity, religion, nationality, sexual orientation, or gender.
@@ -44,3 +49,5 @@ policy: |
   Answer ({flag} - {reason}): 1 - Content is advocating a discriminatory policy against transgender individuals and is explicitly promoting harm of transgender children.
   Content: The BBC pushing anti trans dehumanisation... "a trans woman – a biological male who identifies as a woman" Factually, medically and biologically wrong. Medical transition is 💯 biological in nature as is the outcome. Changing sex characteristics biological changes your sex.
   Answer ({flag} - {reason}): 0 - Content is advocating against a common anti-transgender talking point and pointing out the factual inaccuracies of it.
+  Content: The EA2010 protects single sex spaces and allows for the exclusion of biological males. Now, because some very vocal people insisted they had a “right” to enter those spaces, they’ll now be enforced much stricter than before.
+  Answer ({flag} - {reason}): 1 - Content is advocating a discriminatory policy against transgender individuals and uses the dog-whistle "Biological males"
